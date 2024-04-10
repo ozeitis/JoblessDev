@@ -14,6 +14,7 @@ import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@
 import { CardTitle, CardDescription, CardHeader, CardContent, Card } from "@/components/ui/card"
 import { HoverCardTrigger, HoverCardContent, HoverCard } from "@/components/ui/hover-card"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { Skeleton } from "@/components/ui/skeleton"
 import { debounce } from "lodash";
 import { JSX, SVGProps } from "react"
@@ -28,7 +29,7 @@ export function JobBoard() {
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ search: searchTerm, location, page: '1', pageSize: '25' }).toString();
+      const params = new URLSearchParams({ search: searchTerm, location, page: '1', pageSize: '10' }).toString();
       const response = await axios.get(`/api/jobs?${params}`);
       setJobs(response.data.jobs);
     } catch (error) {
@@ -116,74 +117,71 @@ export function JobBoard() {
                 </div>
               </div>
               <div className="grid gap-6 md:gap-8">
-                {jobs.map((job, index) => (
+                {isLoading ? renderSkeleton() : jobs.map((job, index) => (
                   <>
-                    {isLoading ? renderSkeleton() : jobs.map((job, index) => (
-                      <Card key={index}>
-                        <CardHeader className="flex flex-row items-center gap-4">
-                          <BriefcaseIcon className="h-6 w-6" />
-                          <div className="grid gap-1">
-                            <CardTitle>{job.job_title}</CardTitle>
-                            <CardDescription>
-                              <HoverCard>
-                                <HoverCardTrigger asChild>
-                                  <span className="underline">{job.employer_name}</span>
-                                </HoverCardTrigger>
-                                <HoverCardContent className="w-80">
-                                  <div className="flex justify-between space-x-4">
-                                    <Avatar>
+                    <Card key={index}>
+                      <CardHeader className="flex flex-row items-center gap-4">
+                        <BriefcaseIcon className="h-6 w-6" />
+                        <div className="grid gap-1">
+                          <CardTitle>{job.job_title}</CardTitle>
+                          <CardDescription>
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <span className="underline">{job.employer_name}</span>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-80">
+                                <div className="flex justify-between space-x-4">
+                                  <Avatar>
                                     <AvatarImage src={job.employer_logo ?? undefined} alt={job.employer_name ?? undefined} />
-                                      <AvatarFallback>G</AvatarFallback>
-                                    </Avatar>
-                                    <div className="space-y-1">
-                                      <h4 className="text-sm font-semibold">{job.employer_name}</h4>
-                                      <p className="text-sm">
-                                        {job.job_city}, {job.job_state}
-                                      </p>
-                                      <Link className="text-sm underline text-blue-500" href="#">
-                                        Visit Website
-                                      </Link>
-                                    </div>
+                                    <AvatarFallback>G</AvatarFallback>
+                                  </Avatar>
+                                  <div className="space-y-1">
+                                    <h4 className="text-sm font-semibold">{job.employer_name}</h4>
+                                    <p className="text-sm">
+                                      {job.job_city}, {job.job_state}
+                                    </p>
+                                    <Link className="text-sm underline text-blue-500" href="#">
+                                      Visit Website
+                                    </Link>
                                   </div>
-                                </HoverCardContent>
-                              </HoverCard>
-                              , {job.job_city}, {job.job_state}{"\n                                          "}
-                            </CardDescription>
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                            , {job.job_city}, {job.job_state}{"\n                                          "}
+                          </CardDescription>
+                        </div>
+                        <div className="ml-auto text-sm text-gray-500 dark:text-gray-400">Apply by: {job.job_offer_expiration_datetime_utc ? new Date(job.job_offer_expiration_datetime_utc).toLocaleDateString() : 'N/A'}</div>
+                      </CardHeader>
+                      <CardContent className="grid gap-2">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {job.job_description}
+                        </p>
+                        <div className="grid gap-2">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <strong>Estimated Salary: </strong>
+                            ${job.job_min_salary} - ${job.job_max_salary}{"\n                                          "}
                           </div>
-                          <div className="ml-auto text-sm text-gray-500 dark:text-gray-400">Apply by: {job.job_offer_expiration_datetime_utc ? new Date(job.job_offer_expiration_datetime_utc).toLocaleDateString() : 'N/A'}</div>
-                        </CardHeader>
-                        <CardContent className="grid gap-2">
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {job.job_description}
-                          </p>
-                          <div className="grid gap-2">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <strong>Estimated Salary: </strong>
-                              ${job.job_min_salary} - ${job.job_max_salary}{"\n                                          "}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <strong>Start Date:</strong>
-                              Immediate{"\n                                          "}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <strong>Experience:</strong>
-                              2+ years{"\n                                          "}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <strong>Qualifications:</strong>
-                              {Array.isArray(job.job_required_skills) ? job.job_required_skills.join(', ') : 'N/A'}{"\n                                          "}
-                            </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <strong>Start Date:</strong>
+                            Immediate{"\n                                          "}
                           </div>
-                          <Link
-                            className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                            href={job.job_apply_link}
-                          >
-                            View Details
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {isLoading && renderSkeleton()}
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <strong>Experience:</strong>
+                            2+ years{"\n                                          "}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <strong>Qualifications:</strong>
+                            {Array.isArray(job.job_required_skills) ? job.job_required_skills.join(', ') : 'N/A'}{"\n                                          "}
+                          </div>
+                        </div>
+                        <Link
+                          className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                          href={job.job_apply_link}
+                        >
+                          View Details
+                        </Link>
+                      </CardContent>
+                    </Card>
                   </>
                 ))}
               </div>

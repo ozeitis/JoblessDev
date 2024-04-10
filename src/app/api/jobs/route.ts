@@ -8,7 +8,6 @@ export async function GET(request: Request) {
     const jobState = url.searchParams.get('job_state');
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const pageSize = parseInt(url.searchParams.get('pageSize') || '10', 10);
-
     const skip = (page - 1) * pageSize;
 
     const where = {
