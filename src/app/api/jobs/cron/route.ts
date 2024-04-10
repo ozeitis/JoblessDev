@@ -19,7 +19,6 @@ export async function GET(request: Request) {
         }
     } as any;
 
-    // Initialize counters
     let created = 0;
     let duplicates = 0;
     let failed = 0;
@@ -30,7 +29,6 @@ export async function GET(request: Request) {
 
         for (const job of (data as JobApiResponse).data) {
             try {
-                // Check if the job already exists to handle duplicates
                 const existingJob = await prisma.job.findUnique({
                     where: { job_id: job.job_id },
                 });
