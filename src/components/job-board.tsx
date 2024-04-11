@@ -5,47 +5,69 @@
 * @see https://v0.dev/t/Ixydi5jz06w
 * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
 */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Job, ApplyOption } from '@prisma/client';
-
+import { toast } from 'sonner';
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@/components/ui/select"
 import { CardTitle, CardDescription, CardHeader, CardContent, Card } from "@/components/ui/card"
 import { HoverCardTrigger, HoverCardContent, HoverCard } from "@/components/ui/hover-card"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { QueryFunctionContext, useInfiniteQuery } from '@tanstack/react-query'
 import { Skeleton } from "@/components/ui/skeleton"
 import { debounce } from "lodash";
 import { JSX, SVGProps } from "react"
 import axios from 'axios';
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/nextjs";
+import TruncatedText from './truncated-text';
+import Bookmark from './bookmark';
+import { JobSearchInfoCard } from './info-card';
+import { UrlObject } from 'url';
+
+
+const fetchJobs = async ({ pageParam = 0, queryKey }: QueryFunctionContext): Promise<any> => {
+  // Assert the structure of queryKey to match our expected type
+  const [searchTerm, location] = queryKey[1] as [string, string];
+  const params = new URLSearchParams({
+    search: searchTerm,
+    location: location,
+    page: String(Number(pageParam) + 1),
+    pageSize: '10'
+  }).toString();
+  const response = await axios.get(`/api/jobs?${params}`);
+  return response.data;
+};
+
 
 export function JobBoard() {
   const [jobs, setJobs] = useState([] as Job[]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
+  const loadMoreRef = React.useRef(null);
 
-  const fetchJobs = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({ search: searchTerm, location, page: '1', pageSize: '10' }).toString();
-      const response = await axios.get(`/api/jobs?${params}`);
-      setJobs(response.data.jobs);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchTerm, location]);
-
-  useEffect(() => {
-    const debouncedFetch = debounce(() => {
-      fetchJobs();
-    }, 500);
-    debouncedFetch();
-    return () => debouncedFetch.cancel();
-  }, [fetchJobs]);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+  } = useInfiniteQuery({
+    queryKey: ['jobs', [searchTerm, location]],
+    queryFn: fetchJobs,
+    getNextPageParam: (lastPage, allPages) => {
+      const morePagesExist = lastPage?.jobs?.length === 10;
+      if (!morePagesExist) return undefined;
+      return allPages.length;
+    },
+    initialPageParam: 0,
+  });
 
   const handleSearchChange = (e: { target: { value: React.SetStateAction<string>; }; }) => setSearchTerm(e.target.value);
   const handleLocationChange = (value: React.SetStateAction<string>) => setLocation(value);
@@ -58,28 +80,52 @@ export function JobBoard() {
     </div>
   );
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && hasNextPage) {
+          fetchNextPage();
+        } else if (first.isIntersecting && !hasNextPage && (data?.pages.length ?? 0) > 0) {
+          toast.info('No more jobs to load!');
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, data]);
+
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <header className="flex items-center h-16 px-4 border-b dark:border-gray-800 md:px-6">
-        <Link href="#">
-          <img
-            alt=""
-            className="aspect-[2/1] overflow-hidden rounded-lg object-contain object-center"
-            height="70"
-            src="/placeholder.svg"
-            width="140"
-          />
-          <span className="sr-only">Yeshiva University</span>
+      <header className="container px-4 md:px-6 py-4 flex items-center gap-4">
+        <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
+          Home
+        </Link>
+        <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
+          About
+        </Link>
+        <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
+          Contact
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Home
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            About
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Contact
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <Link href="https://github.com/" className="flex items-center gap-2" target="_blank" rel="noopener noreferrer">
+            <GithubIcon className="w-6 h-6" />
           </Link>
         </nav>
       </header>
@@ -96,7 +142,7 @@ export function JobBoard() {
                 </div>
                 <div className="flex gap-4 md:gap-6 md:ml-auto">
                   <Input className="w-full md:w-64" placeholder="Search jobs..." type="search" value={searchTerm} onChange={handleSearchChange} />
-                  <Select> { /* onChange={(value) => handleLocationChange(value)} */}
+                  <Select onValueChange={(value) => handleLocationChange(value)} >
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Location" />
                     </SelectTrigger>
@@ -116,81 +162,113 @@ export function JobBoard() {
                   </Select>
                 </div>
               </div>
+              <div className="flex justify-center">
+                <JobSearchInfoCard />
+              </div>
               <div className="grid gap-6 md:gap-8">
-                {isLoading ? renderSkeleton() : jobs.map((job, index) => (
-                  <>
-                    <Card key={index}>
-                      <CardHeader className="flex flex-row items-center gap-4">
-                        <BriefcaseIcon className="h-6 w-6" />
-                        <div className="grid gap-1">
-                          <CardTitle>{job.job_title}</CardTitle>
-                          <CardDescription>
-                            <HoverCard>
-                              <HoverCardTrigger asChild>
-                                <span className="underline">{job.employer_name}</span>
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-80">
-                                <div className="flex justify-between space-x-4">
+                {
+                  isFetching && !isFetchingNextPage ? (
+                    renderSkeleton()
+                  ) : (
+                    <>
+                      {data?.pages.map((group, i) => (
+                        <React.Fragment key={i}>
+                          {group.jobs.map((job: { employer_logo: any; employer_name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; job_title: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; job_city: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; job_state: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; updatedAt: string | number | Date; job_offer_expiration_datetime_utc: string | number | Date; job_id: string; job_description: any; job_min_salary: any; job_max_salary: any; job_required_skills: any[]; job_apply_link: string | UrlObject; }, index: React.Key | null | undefined) => (
+                            <Card key={index}>
+                              <CardHeader className="flex flex-row items-center gap-4">
+                                {job.employer_logo && (
                                   <Avatar>
-                                    <AvatarImage src={job.employer_logo ?? undefined} alt={job.employer_name ?? undefined} />
-                                    <AvatarFallback>G</AvatarFallback>
+                                    <AvatarImage src={job.employer_logo.toString()} alt={job.employer_name?.toString()} />
                                   </Avatar>
-                                  <div className="space-y-1">
-                                    <h4 className="text-sm font-semibold">{job.employer_name}</h4>
-                                    <p className="text-sm">
-                                      {job.job_city}, {job.job_state}
-                                    </p>
-                                    <Link className="text-sm underline text-blue-500" href="#">
-                                      Visit Website
-                                    </Link>
+                                ) || (
+                                    <BriefcaseIcon className="h-6 w-6" />
+                                  )}
+                                <div className="grid gap-1">
+                                  <CardTitle>{job.job_title}</CardTitle>
+                                  <CardDescription>
+                                    <HoverCard>
+                                      <HoverCardTrigger asChild>
+                                        <span className="underline">{job.employer_name}</span>
+                                      </HoverCardTrigger>
+                                      <HoverCardContent className="w-80">
+                                        <div className="flex justify-between space-x-4">
+                                          <Avatar>
+                                            <AvatarImage src={job.employer_logo?.toString()} alt={job.employer_name?.toString()} />
+                                            <AvatarFallback>{(job.employer_name as string)?.charAt(0)}</AvatarFallback>
+                                          </Avatar>
+                                          <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold">{job.employer_name}</h4>
+                                            <p className="text-sm">
+                                              {job.job_city}, {job.job_state}
+                                            </p>
+                                            <Link className="text-sm underline text-blue-500" href="#">
+                                              Visit Website
+                                            </Link>
+                                          </div>
+                                        </div>
+                                      </HoverCardContent>
+                                    </HoverCard>
+                                    , {job.job_city}, {job.job_state}{"\n                                          "}
+                                  </CardDescription>
+                                </div>
+                                <div className="ml-auto flex flex-col items-end">
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    Last Updated on: {job.updatedAt ? new Date(job.updatedAt).toLocaleDateString() : 'N/A'}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    Apply by: {job.job_offer_expiration_datetime_utc ? new Date(job.job_offer_expiration_datetime_utc).toLocaleDateString() : 'N/A'}
+                                  </div>
+                                  <Bookmark jobId={job.job_id} />
+                                </div>
+                              </CardHeader>
+                              <CardContent className="grid gap-2">
+                                <TruncatedText text={job.job_description} maxLength={100} />
+                                <div className="grid gap-2">
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>Estimated Salary:</strong>
+                                    {job.job_min_salary && job.job_max_salary ? (
+                                      ` $${job.job_min_salary} - $${job.job_max_salary}`
+                                    ) : job.job_min_salary ? (
+                                      ` From $${job.job_min_salary}`
+                                    ) : job.job_max_salary ? (
+                                      ` Up to $${job.job_max_salary}`
+                                    ) : " Salary not disclosed"}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>Start Date:</strong>
+                                    Immediate{"\n                                          "}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>Experience:</strong>
+                                    2+ years{"\n                                          "}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>Qualifications:</strong>
+                                    {Array.isArray(job.job_required_skills) ? job.job_required_skills.join(', ') : 'N/A'}{"\n                                          "}
                                   </div>
                                 </div>
-                              </HoverCardContent>
-                            </HoverCard>
-                            , {job.job_city}, {job.job_state}{"\n                                          "}
-                          </CardDescription>
-                        </div>
-                        <div className="ml-auto text-sm text-gray-500 dark:text-gray-400">Apply by: {job.job_offer_expiration_datetime_utc ? new Date(job.job_offer_expiration_datetime_utc).toLocaleDateString() : 'N/A'}</div>
-                      </CardHeader>
-                      <CardContent className="grid gap-2">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {job.job_description}
-                        </p>
-                        <div className="grid gap-2">
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            <strong>Estimated Salary: </strong>
-                            ${job.job_min_salary} - ${job.job_max_salary}{"\n                                          "}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            <strong>Start Date:</strong>
-                            Immediate{"\n                                          "}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            <strong>Experience:</strong>
-                            2+ years{"\n                                          "}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            <strong>Qualifications:</strong>
-                            {Array.isArray(job.job_required_skills) ? job.job_required_skills.join(', ') : 'N/A'}{"\n                                          "}
-                          </div>
-                        </div>
-                        <Link
-                          className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                          href={job.job_apply_link}
-                        >
-                          View Details
-                        </Link>
-                      </CardContent>
-                    </Card>
-                  </>
-                ))}
+                                <Link
+                                  className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                                  href={job.job_apply_link}
+                                >
+                                  View Details
+                                </Link>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                      {isFetchingNextPage && renderSkeleton()}
+                    </>
+                  )}
+                <div ref={loadMoreRef} className="mb-8"></div>
               </div>
             </div>
           </div>
         </section>
       </main>
     </div>
-  )
+  );
 }
 
 function BriefcaseIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
@@ -211,6 +289,23 @@ function BriefcaseIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>)
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
   )
+}
+
+function GithubIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      role="img"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <title>GitHub</title>
+      <path
+        fill="currentColor"
+        d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.775.418-1.305.762-1.605-2.665-.3-5.467-1.332-5.467-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+      />
+    </svg>
+  );
 }
 
 

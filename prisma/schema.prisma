@@ -56,6 +56,7 @@ model Job {
   job_naics_code          String?
   job_naics_name          String?
   ApplyOptions            ApplyOption[]
+  bookmarks Bookmark[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -70,3 +71,14 @@ model ApplyOption {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String   // Assuming Clerk provides a string ID for users
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [job_id])
+  createdAt DateTime @default(now())
+  @@unique([userId, jobId])
+}
+

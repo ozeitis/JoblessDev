@@ -74,3 +74,16 @@
       @apply bg-background text-foreground;
     }
   }
+
+  .logo-card {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000; 
+  }
+
+  .content-flex {
+    display: flex;
+    align-items: center; /* Align items vertically in the center */
+    gap: 10px; /* Adds some space between the avatar and the text */
+}
