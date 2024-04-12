@@ -29,7 +29,7 @@ import TruncatedText from './truncated-text';
 import Bookmark from './bookmark';
 import { JobSearchInfoCard } from './info-card';
 import { UrlObject } from 'url';
-
+import EmailFrequencySelector from './email-frequency-selector';
 
 const fetchJobs = async ({ pageParam = 0, queryKey }: QueryFunctionContext): Promise<any> => {
   // Assert the structure of queryKey to match our expected type
@@ -118,15 +118,18 @@ export function JobBoard() {
           Contact
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
+          <Link href="https://github.com/" className="flex items-center gap-2" target="_blank" rel="noopener noreferrer">
+            <GithubIcon className="w-6 h-6" />
+          </Link>
+
+          <EmailFrequencySelector />
+
           <SignedIn>
             <UserButton />
           </SignedIn>
           <SignedOut>
             <SignInButton />
           </SignedOut>
-          <Link href="https://github.com/" className="flex items-center gap-2" target="_blank" rel="noopener noreferrer">
-            <GithubIcon className="w-6 h-6" />
-          </Link>
         </nav>
       </header>
       <main className="flex-1">
@@ -173,7 +176,7 @@ export function JobBoard() {
                     <>
                       {data?.pages.map((group, i) => (
                         <React.Fragment key={i}>
-                          {group.jobs.map((job: { employer_logo: any; employer_name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; job_title: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; job_city: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; job_state: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<React.AwaitedReactNode> | null | undefined; updatedAt: string | number | Date; job_offer_expiration_datetime_utc: string | number | Date; job_id: string; job_description: any; job_min_salary: any; job_max_salary: any; job_required_skills: any[]; job_apply_link: string | UrlObject; }, index: React.Key | null | undefined) => (
+                          {group.jobs.map((job: Job, index: number) => (
                             <Card key={index}>
                               <CardHeader className="flex flex-row items-center gap-4">
                                 {job.employer_logo && (
@@ -222,29 +225,39 @@ export function JobBoard() {
                                 </div>
                               </CardHeader>
                               <CardContent className="grid gap-2">
-                                <TruncatedText text={job.job_description} maxLength={100} />
+                                <TruncatedText text={job.job_description ?? ''} maxLength={100} />
                                 <div className="grid gap-2">
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     <strong>Estimated Salary:</strong>
                                     {job.job_min_salary && job.job_max_salary ? (
-                                      ` $${job.job_min_salary} - $${job.job_max_salary}`
+                                      ` $${new Intl.NumberFormat().format(job.job_min_salary)} - $${new Intl.NumberFormat().format(job.job_max_salary)}`
                                     ) : job.job_min_salary ? (
-                                      ` From $${job.job_min_salary}`
+                                      ` From $${new Intl.NumberFormat().format(job.job_min_salary)}`
                                     ) : job.job_max_salary ? (
-                                      ` Up to $${job.job_max_salary}`
+                                      ` Up to $${new Intl.NumberFormat().format(job.job_max_salary)}`
                                     ) : " Salary not disclosed"}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    <strong>Start Date:</strong>
-                                    Immediate{"\n                                          "}
+                                    <strong>Experience: </strong>
+                                    {job.job_required_experience ? renderExperience(job.job_required_experience as { no_experience_required: boolean; experience_mentioned: boolean; experience_preferred: boolean; required_experience_in_months: number; }) : 'Not Specified'}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    <strong>Experience:</strong>
-                                    2+ years{"\n                                          "}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    <strong>Qualifications:</strong>
+                                    <strong>Qualifications: </strong>
                                     {Array.isArray(job.job_required_skills) ? job.job_required_skills.join(', ') : 'N/A'}{"\n                                          "}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>Benefits: </strong>
+                                    {Array.isArray(job.job_benefits) ?
+                                      job.job_benefits.map(benefit =>
+                                        typeof benefit === 'string' ?
+                                          benefit.split('_').map(word =>
+                                            word.charAt(0).toUpperCase() + word.slice(1)
+                                          ).join(' ') :
+                                          ''
+                                      ).filter(Boolean).join(', ') :
+                                      'N/A'
+                                    }
+                                    {"\n                                          "}
                                   </div>
                                 </div>
                                 <Link
@@ -270,6 +283,34 @@ export function JobBoard() {
     </div>
   );
 }
+
+function renderExperience(expData = { no_experience_required: false, experience_mentioned: false, experience_preferred: false, required_experience_in_months: 0 }) {
+  // Convert experience from months to years
+  let experienceYears = expData.required_experience_in_months / 12;
+  let experienceDisplay = '';
+
+  if (expData.no_experience_required) {
+    experienceDisplay = 'No Experience Required';
+  } else if (expData.experience_mentioned && expData.required_experience_in_months != null) {
+    // Check if the experience converts neatly into whole years
+    if (Number.isInteger(experienceYears)) {
+      experienceDisplay = `${experienceYears} year(s)`;
+    } else {
+      // If not, display as a decimal to one place
+      experienceDisplay = `${experienceYears.toFixed(1)} year(s)`;
+    }
+
+    // Add a note if experience is preferred but not strictly required
+    if (expData.experience_preferred) {
+      experienceDisplay += ' (Experience Preferred)';
+    }
+  } else {
+    experienceDisplay = 'Experience Not Specified';
+  }
+
+  return experienceDisplay;
+}
+
 
 function BriefcaseIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (

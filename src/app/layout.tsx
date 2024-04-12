@@ -5,6 +5,7 @@ import ReactQueryProvider from "@/components/ReactQueryProvider";
 import { Toaster } from 'sonner';
 import { ClerkProvider } from '@clerk/nextjs'
 import LogoCard from "@/components/logo-card";
+import { LogSnagProvider } from '@logsnag/next';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <LogSnagProvider token={process.env.LOGSNAG_API_KEY || ""} project={process.env.LOGSNAG_PROJECT_NAME || ""} />
+          {/* Other head elements */}
+        </head>
         <body className={inter.className}>
           <ReactQueryProvider>{children}</ReactQueryProvider>
           <LogoCard />

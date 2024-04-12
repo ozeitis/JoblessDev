@@ -11,21 +11,28 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^4.29.12",
+    "@logsnag/next": "^1.0.3",
     "@prisma/client": "5.12.1",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-hover-card": "^1.0.7",
     "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-tooltip": "^1.0.7",
     "@tanstack/react-query": "^5.29.0",
+    "@trigger.dev/nextjs": "^2.3.18",
+    "@trigger.dev/react": "^2.3.18",
+    "@trigger.dev/sdk": "^2.3.18",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lodash": "^4.17.21",
+    "loops": "^1.0.1",
     "next": "14.1.4",
     "node-fetch": "^3.3.2",
     "prisma": "^5.12.1",
     "react": "^18",
     "react-dom": "^18",
+    "resend": "^3.2.0",
     "sonner": "^1.4.41",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.2",
@@ -42,5 +49,8 @@
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
+  },
+  "trigger.dev": {
+    "endpointId": "jobpostings-we3k"
   }
 }

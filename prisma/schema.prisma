@@ -81,4 +81,3 @@ model Bookmark {
   createdAt DateTime @default(now())
   @@unique([userId, jobId])
 }
-

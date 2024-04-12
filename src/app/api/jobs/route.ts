@@ -10,15 +10,15 @@ export async function GET(request: Request) {
     const pageSize = parseInt(url.searchParams.get('pageSize') || '10', 10);
     const skip = (page - 1) * pageSize;
 
-    const where = {
+    const where: any = {
         ...(jobState && { job_state: jobState }),
         ...(search && {
             OR: [
-                { employer_name: { contains: search } },
-                { job_title: { contains: search } },
+                { employer_name: { contains: search, mode: 'insensitive' } },
+                { job_title: { contains: search, mode: 'insensitive' } },
             ],
         }),
-    };    
+    };
 
     try {
         const jobs = await prisma.job.findMany({
