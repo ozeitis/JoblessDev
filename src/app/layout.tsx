@@ -10,8 +10,8 @@ import { LogSnagProvider } from '@logsnag/next';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Job Board | Yeshiva Univsersity",
-  description: "Job board for Yeshiva University students",
+  title: "JoblessDev - Where Jobless Developers find Jobs",
+  description: "JoblessDev is a job board for developers who are looking for work. Find your next job here!",
 };
 
 export default function RootLayout({
