@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react"
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import { Toaster } from 'sonner';
 import { ClerkProvider } from '@clerk/nextjs'
@@ -31,6 +32,7 @@ export default function RootLayout({
           <ReactQueryProvider>
             <Navbar />
             {children}
+            <Analytics />
           </ReactQueryProvider>
           <LogoCard />
           <Toaster richColors />

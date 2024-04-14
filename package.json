@@ -28,6 +28,7 @@
     "@trigger.dev/nextjs": "^2.3.18",
     "@trigger.dev/react": "^2.3.18",
     "@trigger.dev/sdk": "^2.3.18",
+    "@vercel/analytics": "^1.2.2",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",

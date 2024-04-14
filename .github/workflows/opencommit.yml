@@ -31,7 +31,7 @@ jobs:
           OCO_OPENAI_API_KEY: ${{ secrets.OCO_OPENAI_API_KEY }}
 
           # customization
-          OCO_OPENAI_MAX_TOKENS: 40960
+          OCO_OPENAI_MAX_TOKENS: 10000
           OCO_OPENAI_BASE_PATH: ''
           OCO_DESCRIPTION: true
           OCO_EMOJI: true
