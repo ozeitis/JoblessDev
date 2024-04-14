@@ -26,8 +26,6 @@ export async function GET(request: Request) {
         }),
     };
 
-    console.log('Where:', where);
-
     try {
         const [jobs, totalCount] = await prisma.$transaction([
             prisma.job.findMany({

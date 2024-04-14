@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { format, subSeconds } from 'date-fns';
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 
 export const JobSearchInfoCard = () => {
+    const [lastUpdated, setLastUpdated] = useState('');
+    const refreshInterval = parseInt(process.env.NEXT_PUBLIC_INTERVAL_SECONDS || '3600')
+
+    useEffect(() => {
+        const lastUpdateTime = subSeconds(new Date(), refreshInterval);
+        setLastUpdated(format(lastUpdateTime, 'PPpp'));
+
+        const intervalId = setInterval(() => {
+            const updateTime = new Date();
+            setLastUpdated(format(updateTime, 'PPpp')); // This is placeholder -- I will add real logic here
+        }, refreshInterval * 1000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <Card className="my-6 p-4 bg-white shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out">
             <CardContent className="text-left">
                 <CardTitle>How Job Applications are Parsed</CardTitle>
                 <CardDescription>
-                    <p>Fast and Reliable Job Searches on LinkedIn, Indeed, Glassdoor, and others on Google for Jobs in Real-Time.</p>
-                    <p>JSearch by OpenWeb Ninja is a fast, reliable, and comprehensive jobs API. As the most comprehensive and maintained option available, JSearch empowers you to seamlessly access most up-to-date job postings and salary information in real-time from Google for Jobs - the largest job aggregate on the web.</p>
-                    <ul className="list-disc ml-5 mt-2">
-                        <li>Covering most of the major (and minor) job sites - LinkedIn, Indeed, Glassdoor, ZipRecruiter, and many others.</li>
-                        <li>More than 30 data points per job.</li>
-                        <li>Extensive search, querying, and filtering capabilities.</li>
-                    </ul>
+                    <p>JoblessDev provides the most comprehensive and current job listings, including salary details, from major and minor job sites like LinkedIn, Indeed, Glassdoor, and others in real-time. With over 30 data points per job, it offers extensive search, querying, and filtering capabilities, ensuring fast and reliable job searches. Please note that while we strive to capture all available job postings, some may occasionally be missed.</p>
+                    <p className="mt-5">Updates every <strong>{refreshInterval / 3600}</strong> hours. Last updated: <strong>{lastUpdated}</strong>.</p>
                 </CardDescription>
             </CardContent>
         </Card>
