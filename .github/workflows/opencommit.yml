@@ -31,9 +31,9 @@ jobs:
           OCO_OPENAI_API_KEY: ${{ secrets.OCO_OPENAI_API_KEY }}
 
           # customization
-          OCO_OPENAI_MAX_TOKENS: 4096
+          OCO_OPENAI_MAX_TOKENS: 40960
           OCO_OPENAI_BASE_PATH: ''
           OCO_DESCRIPTION: false
           OCO_EMOJI: false
-          OCO_MODEL: gpt-3.5-turbo
+          OCO_MODEL: gpt-4
           OCO_LANGUAGE: en
