@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 import axios from 'axios';
 
@@ -7,8 +7,16 @@ interface CompanyOption {
   value: string;
 }
 
-const CompanySearchSelect = ({ onCompanySelect }: { onCompanySelect: (selectedOptions: any) => void }) => {
+const CompanySearchSelect = ({ onCompanySelect, initialSelectedCompanies }: { onCompanySelect: (selectedOptions: any) => void, initialSelectedCompanies: string[] }) => {
   const [selectedCompanies, setSelectedCompanies] = useState([] as CompanyOption[]);
+
+  useEffect(() => {
+    const initialOptions = initialSelectedCompanies.map(company => ({
+      label: company,
+      value: company,
+    }));
+    setSelectedCompanies(initialOptions);
+  }, [initialSelectedCompanies]);
 
   const loadOptions = async (inputValue: string) => {
     try {

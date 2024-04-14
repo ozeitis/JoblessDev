@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Job, ApplyOption } from '@prisma/client';
+import { Job } from '@prisma/client';
 import { toast } from 'sonner';
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
@@ -9,24 +9,16 @@ import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@
 import { CardTitle, CardDescription, CardHeader, CardContent, Card } from "@/components/ui/card"
 import { HoverCardTrigger, HoverCardContent, HoverCard } from "@/components/ui/hover-card"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import { QueryFunctionContext, useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { Skeleton } from "@/components/ui/skeleton"
 import { debounce } from "lodash";
-import { JSX, SVGProps } from "react"
 import axios from 'axios';
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/nextjs";
 import TruncatedText from './truncated-text';
 import Bookmark from './bookmark';
 import { JobSearchInfoCard } from './info-card';
-import { UrlObject } from 'url';
-import EmailFrequencySelector from './email-frequency-selector';
-import { BriefcaseIcon, GithubIcon } from './icons';
+import { BriefcaseIcon } from './icons';
 import CompanySearchSelect from './company-list';
+import { useSearchParams } from 'next/navigation';
 
 // This function abstracts the API call logic.
 const fetchData = async ({ apiEndpoint, queryKey, pageParam = 0 }: { apiEndpoint: string, queryKey: any[], pageParam?: number }) => {
@@ -43,20 +35,47 @@ const fetchData = async ({ apiEndpoint, queryKey, pageParam = 0 }: { apiEndpoint
 };
 
 export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpoint: string, pageTitle: string, pageDescription: string }) {
-  const [jobs, setJobs] = useState([] as Job[]);
-  const [isLoading, setIsLoading] = useState(true);
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [totalJobs, setTotalJobs] = useState(-1);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const loadMoreRef = React.useRef(null);
 
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    const locationParam = searchParams.get('location');
+    const companiesParam = searchParams.get('companies');
+
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+    if (locationParam) {
+      setLocation(locationParam);
+    }
+    if (companiesParam) {
+      setSelectedCompanies(companiesParam.split(','));
+    }
+  }, [searchParams]);
+
   const handleCompanySelect = (selectedCompanies: any) => {
-    console.log('Selected companies:', selectedCompanies);
     const companyNames = selectedCompanies.map((company: any) => company.value);
-    console.log('Selected companies:', companyNames, " with length: ", companyNames.length);
     setSelectedCompanies(companyNames);
-  }
+    updateSearchParams({ companies: companyNames.join(',') });
+  };
+
+  const updateSearchParams = (newParams: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, '', newUrl);
+  };
 
   const {
     data,
@@ -81,8 +100,15 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     }
   }, [data]);
 
-  const handleSearchChange = (e: { target: { value: React.SetStateAction<string>; }; }) => setSearchTerm(e.target.value);
-  const handleLocationChange = (value: React.SetStateAction<string>) => setLocation(value);
+  const handleSearchChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+    setSearchTerm(e.target.value);
+    updateSearchParams({ search: e.target.value });
+  };
+
+  const handleLocationChange = (value: React.SetStateAction<string>) => {
+    setLocation(value);
+    updateSearchParams({ location: value });
+  };
 
   const renderSkeleton = () => (
     <div className="flex flex-col space-y-3">
@@ -135,8 +161,8 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                 </div>
                 <div className="flex gap-4 md:gap-6 md:ml-auto">
                   <Input className="w-full md:w-64" placeholder="Search jobs..." type="search" value={searchTerm} onChange={handleSearchChange} />
-                  <CompanySearchSelect onCompanySelect={handleCompanySelect} />
-                  <Select onValueChange={(value) => handleLocationChange(value)} >
+                  <CompanySearchSelect onCompanySelect={handleCompanySelect} initialSelectedCompanies={selectedCompanies} />
+                  <Select onValueChange={(value) => handleLocationChange(value)} value={location}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Location" />
                     </SelectTrigger>
