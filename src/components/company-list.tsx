@@ -14,8 +14,8 @@ const CompanySearchSelect = ({ onCompanySelect }: { onCompanySelect: (selectedOp
     try {
       const response = await axios.get(`/api/companies?search=${inputValue}`);
       return response.data.map((company: any) => ({
-        label: company.name,
-        value: company.id
+        label: `${company.name} (${company._count.jobs})`,
+        value: company.name,
       }));
     } catch (error) {
       console.error('Error fetching companies:', error);
@@ -26,7 +26,7 @@ const CompanySearchSelect = ({ onCompanySelect }: { onCompanySelect: (selectedOp
   const handleChange = (selectedOptions: any) => {
     console.log('Selected companies:', selectedOptions);
     setSelectedCompanies(selectedOptions);
-    onCompanySelect(selectedOptions); // Trigger the callback on selection
+    onCompanySelect(selectedOptions);
   };
 
   return (
@@ -42,7 +42,6 @@ const CompanySearchSelect = ({ onCompanySelect }: { onCompanySelect: (selectedOp
       placeholder="Search for companies..."
       noOptionsMessage={() => 'No companies found'}
       loadingMessage={() => 'Loading companies...'}
-      
     />
   );
 };

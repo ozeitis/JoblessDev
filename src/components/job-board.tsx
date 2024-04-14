@@ -52,7 +52,8 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
   const loadMoreRef = React.useRef(null);
 
   const handleCompanySelect = (selectedCompanies: any) => {
-    const companyNames = selectedCompanies.map((company: any) => company.label);
+    console.log('Selected companies:', selectedCompanies);
+    const companyNames = selectedCompanies.map((company: any) => company.value);
     console.log('Selected companies:', companyNames, " with length: ", companyNames.length);
     setSelectedCompanies(companyNames);
   }
