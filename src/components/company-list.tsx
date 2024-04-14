@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import axios from 'axios';
 
-const CompanySearchSelect = ({ onCompanySelect }) => {
-  const [selectedCompanies, setSelectedCompanies] = useState([]);
+interface CompanyOption {
+  label: string;
+  value: string;
+}
 
-  const loadOptions = async (inputValue) => {
+const CompanySearchSelect = ({ onCompanySelect }: { onCompanySelect: (selectedOptions: any) => void }) => {
+  const [selectedCompanies, setSelectedCompanies] = useState([] as CompanyOption[]);
+
+  const loadOptions = async (inputValue: string) => {
     try {
       const response = await axios.get(`/api/companies?search=${inputValue}`);
-      return response.data.map(company => ({
+      return response.data.map((company: any) => ({
         label: company.name,
         value: company.id
       }));
@@ -18,7 +23,7 @@ const CompanySearchSelect = ({ onCompanySelect }) => {
     }
   };
 
-  const handleChange = (selectedOptions) => {
+  const handleChange = (selectedOptions: any) => {
     console.log('Selected companies:', selectedOptions);
     setSelectedCompanies(selectedOptions);
     onCompanySelect(selectedOptions); // Trigger the callback on selection
