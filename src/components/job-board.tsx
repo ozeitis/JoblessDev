@@ -47,6 +47,7 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
+  const [totalJobs, setTotalJobs] = useState(-1);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const loadMoreRef = React.useRef(null);
 
@@ -72,6 +73,12 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     },
     initialPageParam: 0,
   });
+
+  useEffect(() => {
+    if (data?.pages?.[0]?.totalCount) {
+      setTotalJobs(data.pages[0].totalCount);
+    }
+  }, [data]);
 
   const handleSearchChange = (e: { target: { value: React.SetStateAction<string>; }; }) => setSearchTerm(e.target.value);
   const handleLocationChange = (value: React.SetStateAction<string>) => setLocation(value);
@@ -115,6 +122,9 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
         <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 md:gap-8">
+              <div className="text-right">
+                <h1 className="text-sm font-semibold">Total Jobs Matching Your Criteria: {totalJobs === -1 ? "..." : totalJobs}</h1>
+              </div>
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8">
                 <div className="grid gap-1">
                   <h1 className="text-2xl font-bold tracking-tight">{pageTitle}</h1>
