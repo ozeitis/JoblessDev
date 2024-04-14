@@ -5,13 +5,19 @@ const prisma = new PrismaClient();
 export async function GET(request: Request) {
     const url = new URL(request.url);
     const search = url.searchParams.get('search') || '';
-    const jobState = url.searchParams.get('job_state');
+    let companies: string[] = url.searchParams.get('companies')?.split(',')?.map(company => company.trim()).filter(Boolean) || [];
+    let jobState = url.searchParams.get('location');
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const pageSize = parseInt(url.searchParams.get('pageSize') || '10', 10);
     const skip = (page - 1) * pageSize;
 
+    if (jobState === 'all') {
+        jobState = null;
+    }
+
     const where: any = {
-        ...(jobState && { job_state: jobState }),
+        ...(jobState && { job_state: { equals: jobState, mode: 'insensitive' } }),
+        ...(companies.length > 0 && { employer_name: { in: companies } }),
         ...(search && {
             OR: [
                 { employer_name: { contains: search, mode: 'insensitive' } },
@@ -20,15 +26,18 @@ export async function GET(request: Request) {
         }),
     };
 
-    try {
-        const jobs = await prisma.job.findMany({
-            where,
-            skip,
-            take: pageSize,
-            orderBy: { createdAt: 'desc' },
-        });
+    console.log('Where:', where);
 
-        const totalCount = await prisma.job.count({ where });
+    try {
+        const [jobs, totalCount] = await prisma.$transaction([
+            prisma.job.findMany({
+                where,
+                skip,
+                take: pageSize,
+                orderBy: { createdAt: 'desc' },
+            }),
+            prisma.job.count({ where }),
+        ]);
 
         return new Response(JSON.stringify({ jobs, totalCount }), {
             status: 200,

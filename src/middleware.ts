@@ -1,7 +1,7 @@
 import { authMiddleware } from "@clerk/nextjs";
-
-export default authMiddleware({});
+ 
+export default authMiddleware();
 
 export const config = {
-  matcher: ['/api/auth/:path*'],
+  matcher: ['/api/auth/:path*', '/user/:path*'],
 };

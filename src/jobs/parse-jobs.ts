@@ -50,6 +50,7 @@ client.defineJob({
             totalCreated: 0,
             totalDuplicates: 0,
             totalFailed: 0,
+            totalCompaniesCreated: 0,
             detailsByLocation: {}
         };
 
@@ -69,24 +70,35 @@ client.defineJob({
 
             try {
                 const response = await fetch(apiUrl, options);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data from API');
+                }
                 const data = await response.json() as { data: any };
 
-                if (!data || !data.data) {
-                    //we need verbose prints so we know exactly what went wrong
-                    await io.logger.error(`Data was empty, failed to fetch jobs for location: ${location}`, data);
-                    await logsnag.track({
-                        channel: "parse-jobs",
-                        event: "Parsed New Jobs",
-                        description: `Data was empty, failed to fetch jobs for location: ${location} with query: ${locationQuery} - ${data}`,
-                        icon: "❌",
-                        notify: true,
-                    });
-                    continue;
-                }
-
-                let created = 0, duplicates = 0, failed = 0;
+                let created = 0, duplicates = 0, failed = 0, companiesCreated = 0;
 
                 for (const job of data.data) {
+                    const { employer_name, employer_logo, employer_website, employer_company_type } = job;
+                    let company;
+
+                    if (employer_name) {
+                        company = await prisma.company.upsert({
+                            where: { name: employer_name },
+                            update: {
+                                logo: employer_logo || '',
+                                website: employer_website || '',
+                                company_type: employer_company_type || '',
+                            },
+                            create: {
+                                name: employer_name,
+                                logo: employer_logo || '',
+                                website: employer_website || '',
+                                company_type: employer_company_type || '',
+                            },
+                        });
+                        companiesCreated++;
+                    }
+
                     try {
                         const existingJob = await prisma.job.findUnique({
                             where: { job_id: job.job_id },
@@ -133,6 +145,7 @@ client.defineJob({
                                     job_occupational_categories: job.job_occupational_categories,
                                     job_naics_code: job.job_naics_code,
                                     job_naics_name: job.job_naics_name,
+                                    companyId: company ? company.id : null,
                                 },
                             });
                             created++;
@@ -148,10 +161,11 @@ client.defineJob({
                 totalStats.totalCreated += created;
                 totalStats.totalDuplicates += duplicates;
                 totalStats.totalFailed += failed;
+                totalStats.totalCompaniesCreated += companiesCreated;
 
                 totalStats.detailsByLocation = {
                     ...totalStats.detailsByLocation,
-                    [location]: { created, duplicates, failed },
+                    [location]: { created, duplicates, failed, companiesCreated }
                 };
             } catch (error) {
                 await io.logger.error(`Failed to fetch jobs for location: ${location}`, error as any);
@@ -197,13 +211,15 @@ client.defineJob({
             }
         });
 
+        await logsnag.insight.track({
+            title: "Total Jobs",
+            value: totalStats.totalCreated,
+            icon: "📈"
+        });
+
         return {
             message: 'Job fetching and storage process for all locations completed.',
-            totalStats: {
-                totalCreated: totalStats.totalCreated,
-                totalDuplicates: totalStats.totalDuplicates,
-                totalFailed: totalStats.totalFailed
-            },
+            totalStats: totalStats,
             detailsByLocation: totalStats.detailsByLocation
         };
     },

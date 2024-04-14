@@ -14,70 +14,83 @@ datasource db {
 }
 
 model Job {
-  id                      String   @id @default(uuid())
-  job_id                  String @unique
-  employer_name           String?
-  employer_logo           String?
-  employer_website        String?
-  employer_company_type   String?
-  job_publisher           String?
-  job_employment_type     String?
-  job_title               String?
-  job_apply_link          String
-  job_apply_is_direct     Boolean
-  job_apply_quality_score Float?
-  job_description         String?
-  job_is_remote           Boolean
-  job_posted_at_timestamp Int?
-  job_posted_at_datetime_utc DateTime?
-  job_city                String?
-  job_state               String?
-  job_country             String?
-  job_latitude            Float?
-  job_longitude           Float?
-  job_benefits            Json?
-  job_google_link         String?
-  job_offer_expiration_datetime_utc DateTime?
-  job_offer_expiration_timestamp Int?
-  job_required_experience Json?
-  job_required_skills     Json?
-  job_required_education  Json?
+  id                                   String        @id @default(uuid())
+  job_id                               String        @unique
+  employer_name                        String?
+  employer_logo                        String?
+  employer_website                     String?
+  employer_company_type                String?
+  job_publisher                        String?
+  job_employment_type                  String?
+  job_title                            String?
+  job_apply_link                       String
+  job_apply_is_direct                  Boolean
+  job_apply_quality_score              Float?
+  job_description                      String?
+  job_is_remote                        Boolean
+  job_posted_at_timestamp              Int?
+  job_posted_at_datetime_utc           DateTime?
+  job_city                             String?
+  job_state                            String?
+  job_country                          String?
+  job_latitude                         Float?
+  job_longitude                        Float?
+  job_benefits                         Json?
+  job_google_link                      String?
+  job_offer_expiration_datetime_utc    DateTime?
+  job_offer_expiration_timestamp       Int?
+  job_required_experience              Json?
+  job_required_skills                  Json?
+  job_required_education               Json?
   job_experience_in_place_of_education Boolean?
-  job_min_salary          Int?
-  job_max_salary          Int?
-  job_salary_currency     String?
-  job_salary_period       String?
-  job_highlights          Json?
-  job_job_title           String?
-  job_posting_language    String?
-  job_onet_soc            String?
-  job_onet_job_zone       String?
-  job_occupational_categories Json?
-  job_naics_code          String?
-  job_naics_name          String?
-  ApplyOptions            ApplyOption[]
-  bookmarks Bookmark[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  job_min_salary                       Int?
+  job_max_salary                       Int?
+  job_salary_currency                  String?
+  job_salary_period                    String?
+  job_highlights                       Json?
+  job_job_title                        String?
+  job_posting_language                 String?
+  job_onet_soc                         String?
+  job_onet_job_zone                    String?
+  job_occupational_categories          Json?
+  job_naics_code                       String?
+  job_naics_name                       String?
+  ApplyOptions                         ApplyOption[]
+  bookmarks                            Bookmark[]
+  company                              Company?      @relation(fields: [companyId], references: [id])
+  companyId                            String?
+  createdAt                            DateTime      @default(now())
+  updatedAt                            DateTime      @updatedAt
 }
 
 model ApplyOption {
-  id            String @id @default(uuid())
-  jobId         String
-  publisher     String?
-  apply_link    String?
-  is_direct     Boolean
-  job           Job   @relation(fields: [jobId], references: [job_id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  jobId      String
+  publisher  String?
+  apply_link String?
+  is_direct  Boolean
+  job        Job      @relation(fields: [jobId], references: [job_id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
+model Company {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  logo         String?
+  website      String?
+  company_type String?
+  jobs         Job[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
 
 model Bookmark {
   id        String   @id @default(uuid())
-  userId    String   // Assuming Clerk provides a string ID for users
+  userId    String // Assuming Clerk provides a string ID for users
   jobId     String
   job       Job      @relation(fields: [jobId], references: [job_id])
   createdAt DateTime @default(now())
+
   @@unique([userId, jobId])
 }
