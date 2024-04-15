@@ -94,20 +94,14 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     initialPageParam: 0,
   });
 
-  useEffect(() => {
-    if (data?.pages?.[0]?.totalCount) {
-      setTotalJobs(data.pages[0].totalCount);
-    }
-  }, [data]);
-
-  const handleSearchChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+  const handleSearchChange = (e: { target: { value: string; }; }) => {
     setSearchTerm(e.target.value);
     updateSearchParams({ search: e.target.value });
   };
 
-  const handleLocationChange = (value: React.SetStateAction<string>) => {
-    setLocation(value);
-    updateSearchParams({ location: value });
+  const handleLocationChange = (value: React.SetStateAction<string> | ((prevState: string) => string)) => {
+    setLocation(String(value));
+    updateSearchParams({ location: String(value) });
   };
 
   const renderSkeleton = () => (
@@ -143,16 +137,16 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     };
   }, [fetchNextPage, hasNextPage, data]);
 
-  function renderSalary(job) {
+  function renderSalary(job: Job) {
     if (job.job_min_salary && job.job_max_salary) {
       const salaryRange = `$${new Intl.NumberFormat().format(job.job_min_salary)} - $${new Intl.NumberFormat().format(job.job_max_salary)}`;
-      return `${salaryRange} per ${job.job_salary_period.toLowerCase()}`;
+      return `${salaryRange} per ${job.job_salary_period?.toLowerCase()}`;
     } else if (job.job_min_salary) {
       const salaryMin = `$${new Intl.NumberFormat().format(job.job_min_salary)}`;
-      return `From ${salaryMin} per ${job.job_salary_period.toLowerCase()}`;
+      return `From ${salaryMin} per ${job.job_salary_period?.toLowerCase()}`;
     } else if (job.job_max_salary) {
       const salaryMax = `$${new Intl.NumberFormat().format(job.job_max_salary)}`;
-      return `Up to ${salaryMax} per ${job.job_salary_period.toLowerCase()}`;
+      return `Up to ${salaryMax} per ${job.job_salary_period?.toLowerCase()}`;
     } else {
       return "Salary not disclosed";
     }
