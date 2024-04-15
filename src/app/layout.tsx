@@ -9,6 +9,7 @@ import LogoCard from "@/components/logo-card";
 import { LogSnagProvider } from '@logsnag/next';
 import Navbar from "@/components/navbar";
 import Script from 'next/script';
+import SegmantAnalytics from "@/components/segment-analytics";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,6 +45,7 @@ export default function RootLayout({
             <Navbar />
             {children}
             <Analytics />
+            <SegmantAnalytics />
           </ReactQueryProvider>
           <LogoCard />
           <Toaster richColors />

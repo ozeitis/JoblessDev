@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useUser } from "@clerk/clerk-react";
-import { AnalyticsBrowser } from '@june-so/analytics-next';
-
-let analytics = AnalyticsBrowser.load({ writeKey: process.env.JUNE_WRITE_KEY || '' });
+import { analytics } from "@/lib/segment";
 
 function Bookmark({ jobId }: { jobId: string }) {
     const { isSignedIn } = useUser();

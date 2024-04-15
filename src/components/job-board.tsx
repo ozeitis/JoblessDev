@@ -94,6 +94,12 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     initialPageParam: 0,
   });
 
+  useEffect(() => {
+    if (data?.pages?.[0]?.totalCount) {
+      setTotalJobs(data.pages[0].totalCount);
+    }
+  }, [data]);
+
   const handleSearchChange = (e: { target: { value: string; }; }) => {
     setSearchTerm(e.target.value);
     updateSearchParams({ search: e.target.value });
@@ -179,15 +185,6 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                       <SelectItem value="all">All States</SelectItem>
                       <SelectItem value="NY">New York</SelectItem>
                       <SelectItem value="NJ">New Jersey</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Experience" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="internship">Internship</SelectItem>
-                      <SelectItem value="newly-grad">Newly Grad</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

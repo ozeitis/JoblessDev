@@ -40,10 +40,16 @@ export function BookmarkIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGEle
     )
   }
   
-  export function GithubIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  interface GithubIconProps extends SVGProps<SVGSVGElement> {
+    size?: number;  // Optional size parameter to control icon size
+  }
+  
+  export function GithubIcon({ size = 24, ...props }: GithubIconProps) {
     return (
       <svg
         {...props}
+        width={size}  // Set width based on size prop
+        height={size} // Set height based on size prop
         role="img"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
