@@ -6,20 +6,22 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import { GithubIcon } from './icons';
 import EmailFrequencySelector from './email-frequency-selector';
 import { useUser } from "@clerk/clerk-react";
-import { AnalyticsBrowser } from '@june-so/analytics-next';
-
-let analytics = AnalyticsBrowser.load({ writeKey: process.env.JUNE_WRITE_KEY || '' });
 
 function Navbar() {
     const { user } = useUser();
-    if (user) {
-        analytics.identify(user.id, {
-            email: user.emailAddresses[0].emailAddress,
-            name: user.fullName,
-            avatar: user.imageUrl,
-        });
+
+    const identify = async () => {
+        const response = await fetch('/api/auth/identify');
+        if (response.ok) {
+            console.log( "User identified" );
+        } else {
+            console.error("Failed to identify user");
+        }
     }
-        
+
+    if (user) {
+        identify();
+    }
 
     return (
         <header className="container px-4 md:px-6 py-4 flex items-center gap-4">
