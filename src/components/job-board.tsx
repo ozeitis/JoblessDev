@@ -143,6 +143,21 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     };
   }, [fetchNextPage, hasNextPage, data]);
 
+  function renderSalary(job) {
+    if (job.job_min_salary && job.job_max_salary) {
+      const salaryRange = `$${new Intl.NumberFormat().format(job.job_min_salary)} - $${new Intl.NumberFormat().format(job.job_max_salary)}`;
+      return `${salaryRange} per ${job.job_salary_period.toLowerCase()}`;
+    } else if (job.job_min_salary) {
+      const salaryMin = `$${new Intl.NumberFormat().format(job.job_min_salary)}`;
+      return `From ${salaryMin} per ${job.job_salary_period.toLowerCase()}`;
+    } else if (job.job_max_salary) {
+      const salaryMax = `$${new Intl.NumberFormat().format(job.job_max_salary)}`;
+      return `Up to ${salaryMax} per ${job.job_salary_period.toLowerCase()}`;
+    } else {
+      return "Salary not disclosed";
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <main className="flex-1">
@@ -246,14 +261,12 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                                 <TruncatedText text={job.job_description ?? ''} maxLength={100} />
                                 <div className="grid gap-2">
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    <strong>Estimated Salary:</strong>
-                                    {job.job_min_salary && job.job_max_salary ? (
-                                      ` $${new Intl.NumberFormat().format(job.job_min_salary)} - $${new Intl.NumberFormat().format(job.job_max_salary)}`
-                                    ) : job.job_min_salary ? (
-                                      ` From $${new Intl.NumberFormat().format(job.job_min_salary)}`
-                                    ) : job.job_max_salary ? (
-                                      ` Up to $${new Intl.NumberFormat().format(job.job_max_salary)}`
-                                    ) : " Salary not disclosed"}
+                                    <strong>Estimated Salary: </strong>
+                                    {renderSalary(job)}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    <strong>Remote: </strong>
+                                    {job.job_is_remote ? 'Yes' : 'No'}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     <strong>Experience: </strong>
@@ -278,11 +291,12 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                                     {"\n                                          "}
                                   </div>
                                 </div>
-                                <Link
-                                  className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                                  href={job.job_apply_link}
-                                >
-                                  View Details
+                                <Link href={job.job_apply_link} passHref legacyBehavior>
+                                  <a target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300">
+                                    View Details
+                                  </a>
                                 </Link>
                               </CardContent>
                             </Card>
