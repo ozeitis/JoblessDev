@@ -4,8 +4,9 @@ import { useState, useEffect, JSX, SVGProps } from 'react';
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { analytics } from "@/lib/segment";
 
-export function CreditsCard() {
+export function CreatorBadge() {
   // Initially set the button to be hidden
   const [isHidden, setIsHidden] = useState(true);
 
@@ -18,7 +19,8 @@ export function CreditsCard() {
   }, []);
 
   const handleClose = () => {
-    const hours = 3; // Or any other duration you prefer
+    analytics.track('Creator Badge Closed');
+    const hours = 3;
     const now = new Date().getTime();
     const hideUntil = now + hours * 60 * 60 * 1000;
     localStorage.setItem("hideUntil", hideUntil.toString());
@@ -26,6 +28,7 @@ export function CreditsCard() {
   };
 
   const handleButtonClick = (e: { stopPropagation: () => void; }) => {
+    analytics.track('Creator Badge Clicked');
     e.stopPropagation();
     window.open("https://obotach.com", "_blank"); // Change the URL as needed
   };

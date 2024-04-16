@@ -167,26 +167,36 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
               <div className="text-right">
                 <h1 className="text-sm font-semibold">Total Jobs Matching Your Criteria: {totalJobs === -1 ? "..." : totalJobs}</h1>
               </div>
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8">
-                <div className="grid gap-1">
-                  <h1 className="text-2xl font-bold tracking-tight">{pageTitle}</h1>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {pageDescription}
+              <div className="grid gap-1">
+                <h1 className="text-2xl font-bold tracking-tight">{pageTitle}</h1>
+                <p className="text-gray-500 dark:text-gray-400">{pageDescription}</p>
+              </div>
+              <div className="flex flex-col gap-4 mt-4 w-full">
+                <div className="w-full mb-4">
+                  <p className="text-sm font-semibold">
+                    <strong>Experimental:</strong> Searches job titles, descriptions, and company names. Let us know what you think!
                   </p>
                 </div>
-                <div className="flex gap-4 md:gap-6 md:ml-auto">
-                  <Input className="w-full md:w-64" placeholder="Search jobs..." type="search" value={searchTerm} onChange={handleSearchChange} />
-                  <CompanySearchSelect onCompanySelect={handleCompanySelect} initialSelectedCompanies={selectedCompanies} />
-                  <Select onValueChange={(value) => handleLocationChange(value)} value={location}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All States</SelectItem>
-                      <SelectItem value="NY">New York</SelectItem>
-                      <SelectItem value="NJ">New Jersey</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col gap-4 md:flex-row w-full md:items-center md:gap-4">
+                  <div className="w-full md:w-1/2">
+                    <Input className="" placeholder="Search jobs..." type="search" value={searchTerm} onChange={handleSearchChange} />
+                  </div>
+                  <div className="w-full md:w-1/4">
+                    <CompanySearchSelect onCompanySelect={handleCompanySelect} initialSelectedCompanies={selectedCompanies} />
+                  </div>
+                  <div className="w-full md:w-1/4">
+                    <Select onValueChange={(value) => handleLocationChange(value)} value={location}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All States</SelectItem>
+                        <SelectItem value="NY">New York</SelectItem>
+                        <SelectItem value="NJ">New Jersey</SelectItem>
+                        {/* ... other options ... */}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-center">

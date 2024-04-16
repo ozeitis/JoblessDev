@@ -5,11 +5,11 @@ import { Analytics } from "@vercel/analytics/react"
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import { Toaster } from 'sonner';
 import { ClerkProvider } from '@clerk/nextjs'
-import { CreditsCard } from "@/components/credits-card";
+import { CreatorBadge } from "@/components/creator-badge";
 import { LogSnagProvider } from '@logsnag/next';
 import Navbar from "@/components/navbar";
 import SegmantAnalytics from "@/components/segment-analytics";
-import { HelpButton } from "@/components/plain-support/components/helpButton";
+import { HelpButton } from "@/components/plain-support/helpButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +38,7 @@ export default function RootLayout({
             <Analytics />
             <SegmantAnalytics />
           </ReactQueryProvider>
-          <CreditsCard />
+          <CreatorBadge />
           <Toaster richColors />
         </body>
       </html>

@@ -22,6 +22,7 @@ export async function GET(request: Request) {
             OR: [
                 { employer_name: { contains: search, mode: 'insensitive' } },
                 { job_title: { contains: search, mode: 'insensitive' } },
+                { job_description: { contains: search, mode: 'insensitive' } },
             ],
         }),
     };

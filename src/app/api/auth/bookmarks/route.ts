@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     const { userId } = auth();
     const { jobId } = await request.json(); 
-
+    
     try {
         if (!jobId) {
             throw new Error('jobId is undefined or not provided');
@@ -48,6 +48,8 @@ export async function POST(request: Request) {
                 jobId: jobId,
             },
         });
+
+        
 
         return new Response(JSON.stringify(bookmark), {
             status: 201,

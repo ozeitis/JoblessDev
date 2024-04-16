@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { FormField } from '@/components/plain-support/components/formField';
-import { TextInput } from '@/components/plain-support/components/textInput';
-import styles from '@/components/plain-support/components/contactForm.module.css';
-import { Textarea } from '@/components/plain-support/components/textarea';
-import { Button } from '@/components/plain-support/components/button';
+import { FormField } from '@/components/plain-support/formField';
+import { TextInput } from '@/components/plain-support/textInput';
+import styles from '@/components/plain-support/contactForm.module.css';
+import { Textarea } from '@/components/plain-support/textarea';
+import { Button } from '@/components/plain-support/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUser } from "@clerk/clerk-react";
 import { toast } from 'sonner';
+import { analytics } from "@/lib/segment";
 
 export function ContactForm(props: { onSubmit: () => void }) {
   const [name, setName] = useState('');
@@ -43,6 +44,7 @@ export function ContactForm(props: { onSubmit: () => void }) {
       });
       if (result.ok) {
         props.onSubmit();
+        analytics.track('Contact Form Submitted', { name, email, message, requestType });
         toast.success("Nice, we'll be in touch shortly!");
       } else {
         toast.error('Oops, something went wrong.');

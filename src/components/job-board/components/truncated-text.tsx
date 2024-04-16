@@ -1,8 +1,19 @@
 import { useState } from "react";
+import { analytics } from "@/lib/segment";
 
 function TruncatedText({ text, maxLength }: { text: string, maxLength: number }) {
     const [isTruncated, setIsTruncated] = useState(true);
   
+    const handleToggle = () => {
+        setIsTruncated(!isTruncated);
+        // Track the action of expanding or collapsing the text
+        analytics.track("Text Toggle", {
+            action: isTruncated ? "expand" : "collapse",
+            textLength: text.length,
+            maxLength: maxLength
+        });
+    };
+
     const ToggleButton = ({ onClick, isExpanded }: { onClick: () => void, isExpanded: boolean }) => (
       <button
         onClick={onClick}
@@ -31,7 +42,7 @@ function TruncatedText({ text, maxLength }: { text: string, maxLength: number })
         <p style={{ display: "inline" }}>
           {isTruncated ? `${text.slice(0, maxLength)}...` : text}
         </p>
-        <ToggleButton onClick={() => setIsTruncated(!isTruncated)} isExpanded={!isTruncated} />
+        <ToggleButton onClick={handleToggle} isExpanded={!isTruncated} />
       </div>
     );
 }
