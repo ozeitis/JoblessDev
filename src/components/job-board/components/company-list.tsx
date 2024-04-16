@@ -32,7 +32,6 @@ const CompanySearchSelect = ({ onCompanySelect, initialSelectedCompanies }: { on
   };
 
   const handleChange = (selectedOptions: any) => {
-    console.log('Selected companies:', selectedOptions);
     setSelectedCompanies(selectedOptions);
     onCompanySelect(selectedOptions);
   };

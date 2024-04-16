@@ -52,7 +52,6 @@ async function createThread(customerId: string, message: string, title: string) 
 export async function POST(request: Request) {
   try {
     const body: RequestBody = await request.json();
-    console.log(`Received requestType: ${body.requestType}`); // Debug log
 
     const requestTitles: { [key: string]: string } = {
       feature: 'Feature Request',
@@ -68,14 +67,10 @@ export async function POST(request: Request) {
       throw new Error(upsertCustomerRes.error.message);
     }
     
-    console.log(`Customer upserted ${upsertCustomerRes.data.customer.id}`);
-    
     const createThreadRes = await createThread(upsertCustomerRes.data.customer.id, body.message, threadTitle);
     if (createThreadRes.error) {
       throw new Error(createThreadRes.error.message);
     }
-    
-    console.log(`Thread created with ID ${createThreadRes.data.id} with title ${threadTitle}`);
     
     return NextResponse.json({ success: true, message: 'Thread created successfully' });
   } catch (error: any) {
