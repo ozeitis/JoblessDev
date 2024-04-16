@@ -1,0 +1,28 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    animation: fadeIn 300ms forwards 300ms;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.buttonRow {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+}
+
+.eta {
+    display: flex;
+    align-items: center;
+    color: #626B7F;
+}

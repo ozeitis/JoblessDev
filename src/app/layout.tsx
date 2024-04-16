@@ -8,8 +8,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import LogoCard from "@/components/logo-card";
 import { LogSnagProvider } from '@logsnag/next';
 import Navbar from "@/components/navbar";
-import Script from 'next/script';
 import SegmantAnalytics from "@/components/segment-analytics";
+import { HelpButton } from "@/components/plain-support/components/helpButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,21 +29,12 @@ export default function RootLayout({
       <html lang="en">
         <head>
           <LogSnagProvider token={process.env.LOGSNAG_API_KEY || ""} project={process.env.LOGSNAG_PROJECT_NAME || ""} />
-          <Script
-            async
-            src='https://www.googletagmanager.com/gtag/js?id=G-DXJMLPKELE'
-          />
-          <Script id='gtag'>
-            {`window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-DXJMLPKELE');`}
-          </Script>
         </head>
         <body className={inter.className}>
           <ReactQueryProvider>
             <Navbar />
             {children}
+            <HelpButton />
             <Analytics />
             <SegmantAnalytics />
           </ReactQueryProvider>

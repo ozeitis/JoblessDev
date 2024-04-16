@@ -13,11 +13,11 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { Skeleton } from "@/components/ui/skeleton"
 import { debounce } from "lodash";
 import axios from 'axios';
-import TruncatedText from './truncated-text';
-import Bookmark from './bookmark';
-import { JobSearchInfoCard } from './info-card';
-import { BriefcaseIcon } from './icons';
-import CompanySearchSelect from './company-list';
+import TruncatedText from './components/truncated-text';
+import Bookmark from './components/bookmark';
+import { JobSearchInfoCard } from './components/info-card';
+import { BriefcaseIcon } from '../icons';
+import CompanySearchSelect from './components/company-list';
 import { useSearchParams } from 'next/navigation';
 
 // This function abstracts the API call logic.
