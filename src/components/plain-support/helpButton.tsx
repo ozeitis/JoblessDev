@@ -6,7 +6,7 @@ import styles from './helpButton.module.css';
 import { ChatIcon } from './icons/chatIcon';
 import * as Popover from '@radix-ui/react-popover';
 import { CloseIcon } from './icons/closeIcon';
-import { DiscordIcon } from './icons/discordIcon';
+import { SlackIcon } from './icons/slackIcon';
 import { BookIcon } from './icons/bookIcon';
 import { ChatAltIcon } from './icons/chatAltIcon';
 import { ContactForm } from './contactForm';
@@ -65,8 +65,8 @@ export function HelpButton() {
               <p className={styles.popoverNudge}>
                 Psss... Discord is great if you want a quick reply from our community!
               </p>
-              <LinkRow label="Join on Discord" href="https://discord.com/" icon={<DiscordIcon />} />
-              <LinkRow label="Documentation" href="https://plain.com/docs/" icon={<BookIcon />} />
+              <LinkRow label="Join on Slack" href="https://join.slack.com/t/joblessdev/shared_invite/zt-2gwopb39y-9XzMearVJQEVa46lvsQVdg" icon={<SlackIcon />} />
+              {/* <LinkRow label="Documentation" href="https://plain.com/docs/" icon={<BookIcon />} /> */}
               <LinkRow
                 label="Get in touch"
                 href="#"

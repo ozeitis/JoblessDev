@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import { GithubIcon } from './icons';
+import GitHubButton from 'react-github-btn'
 
 function Navbar() {
 
@@ -25,9 +26,7 @@ function Navbar() {
                 <SignedIn><UserButton /></SignedIn>
                 <SignedOut><SignInButton /></SignedOut>
 
-                <Link href="https://github.com/" className="flex items-center gap-2" target="_blank" rel="noopener noreferrer">
-                    <GithubIcon size={32} />
-                </Link>
+                <GitHubButton href="https://github.com/ozeitis/JoblessDev" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" data-show-count="true" aria-label="Star ozeitis/JoblessDev on GitHub">Open Source</GitHubButton>
             </nav>
         </header>
     );
