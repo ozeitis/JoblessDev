@@ -1,0 +1,12 @@
+.container {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000; /* high z-index to ensure it stays on top of other content */
+    background: white; /* you might need this if your navbar isn't opaque */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: Adds shadow for better visibility */
+}
+
+body {
+    padding-top: 60px; /* Adjust this value based on the actual height of your navbar */
+}

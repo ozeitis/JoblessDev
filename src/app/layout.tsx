@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react"
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import { Toaster } from 'sonner';
 import { ClerkProvider } from '@clerk/nextjs'
-import LogoCard from "@/components/logo-card";
+import { CreditsCard } from "@/components/credits-card";
 import { LogSnagProvider } from '@logsnag/next';
 import Navbar from "@/components/navbar";
 import SegmantAnalytics from "@/components/segment-analytics";
@@ -38,7 +38,7 @@ export default function RootLayout({
             <Analytics />
             <SegmantAnalytics />
           </ReactQueryProvider>
-          <LogoCard />
+          <CreditsCard />
           <Toaster richColors />
         </body>
       </html>
