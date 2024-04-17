@@ -35,14 +35,14 @@ export default function RootLayout({
         <body className={inter.className}>
           <ReactQueryProvider>
             <Navbar />
-            <OpenpanelProvider
-              url="https://api.openpanel.dev"
-              clientId={process.env.OPENPANEL_CLIENT_ID || ""}
-              trackScreenViews={true}
-              trackAttributes={true}
-              trackOutgoingLinks={true}
-            />
             <CSPostHogProvider>
+              <OpenpanelProvider
+                url="https://api.openpanel.dev"
+                clientId={process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID || ""}
+                trackScreenViews={true}
+                trackAttributes={true}
+                trackOutgoingLinks={true}
+              />
               {children}
             </CSPostHogProvider>
             <HelpButton />
