@@ -12,6 +12,7 @@ import SegmantAnalytics from "@/components/segment-analytics";
 import { HelpButton } from "@/components/plain-support/helpButton";
 import { CSPostHogProvider } from "@/lib/posthog";
 import { OpenpanelProvider } from '@openpanel/nextjs';
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,6 +32,13 @@ export default function RootLayout({
       <html lang="en">
         <head>
           <LogSnagProvider token={process.env.LOGSNAG_API_KEY || ""} project={process.env.LOGSNAG_PROJECT_NAME || ""} />
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADS_CLIENT_ID}`}
+            strategy="lazyOnload"
+            crossOrigin="anonymous"
+          />
+          <meta name="google-adsense-account" content="ca-pub-4395499869686300" />
         </head>
         <body className={inter.className}>
           <ReactQueryProvider>
