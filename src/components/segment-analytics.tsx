@@ -44,6 +44,7 @@ export default function SegmentAnalytics() {
                 firstName: user.firstName || '',
                 lastName: user.lastName || '',
                 email: user.emailAddresses[0].emailAddress || '',
+                avatar: user.imageUrl || '',
             });
         }
     }, [isLoaded, userId, user, pathname, searchParams]);
