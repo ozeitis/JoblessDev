@@ -20,7 +20,6 @@ import { BriefcaseIcon, RefreshCwIcon } from '../icons';
 import CompanySearchSelect from './components/company-list';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '../ui/button';
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { Badge } from '../ui/badge';
 
 

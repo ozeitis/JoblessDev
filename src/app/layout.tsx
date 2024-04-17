@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react"
 import ReactQueryProvider from "@/components/ReactQueryProvider";
@@ -13,8 +13,14 @@ import { HelpButton } from "@/components/plain-support/helpButton";
 import { CSPostHogProvider } from "@/lib/posthog";
 import { OpenpanelProvider } from '@openpanel/nextjs';
 import Script from 'next/script';
+import { HighlightInit } from '@highlight-run/next/client'
 
-const inter = Inter({ subsets: ["latin"] });
+const roboto = Roboto({
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: "JoblessDev - Where Jobless Developers find Jobs",
@@ -40,7 +46,7 @@ export default function RootLayout({
           />
           <meta name="google-adsense-account" content="ca-pub-4395499869686300" />
         </head>
-        <body className={inter.className}>
+        <body className={roboto.className}>
           <ReactQueryProvider>
             <Navbar />
             <CSPostHogProvider>
@@ -50,6 +56,16 @@ export default function RootLayout({
                 trackScreenViews={true}
                 trackAttributes={true}
                 trackOutgoingLinks={true}
+              />
+              <HighlightInit
+                projectId={process.env.NEXT_PUBLIC_HIGHLIGHT_PROJECT_ID || ""}
+                serviceName="my-nextjs-frontend"
+                tracingOrigins
+                networkRecording={{
+                  enabled: true,
+                  recordHeadersAndBody: true,
+                  urlBlocklist: [],
+                }}
               />
               {children}
             </CSPostHogProvider>

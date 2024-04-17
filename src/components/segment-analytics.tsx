@@ -27,6 +27,7 @@ export default function SegmentAnalytics() {
             analytics.identify(userId, {
                 name: user.fullName,
                 email: user.emailAddresses[0].emailAddress,
+                avatar: user.imageUrl,
             });
             analytics.page();
 

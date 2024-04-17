@@ -16,8 +16,7 @@ function Navbar() {
         <header className="container px-4 md:px-6 py-4 flex items-center gap-4">
             {/* Using onClick to force reload */}
             <a href="/" onClick={(e) => { e.preventDefault(); handleReload('/'); }} className="text-sm font-medium hover:underline underline-offset-4">Jobs</a>
-            <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">About</Link>
-            <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">Contact</Link>
+            {/* <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">About</Link> */}
             <nav className="ml-auto flex gap-4 sm:gap-6">
 
                 <Link href="/user/emails" className="text-sm font-medium hover:underline underline-offset-4">Emails</Link>

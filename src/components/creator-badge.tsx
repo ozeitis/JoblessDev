@@ -10,13 +10,11 @@ import {
 } from '@openpanel/nextjs';
 
 export function CreatorBadge() {
-  // Initially set the button to be hidden
   const [isHidden, setIsHidden] = useState(true);
 
   useEffect(() => {
     const hideUntil = localStorage.getItem("hideUntil");
     if (!hideUntil || new Date().getTime() >= Number(hideUntil)) {
-      // Only show the button if the time has elapsed
       setIsHidden(false);
     }
   }, []);
@@ -36,7 +34,7 @@ export function CreatorBadge() {
     trackEvent('Creator Badge Clicked');
     
     e.stopPropagation();
-    window.open("https://obotach.com", "_blank"); // Change the URL as needed
+    window.open("https://suc.to/oze", "_blank");
   };
 
   if (isHidden) {
