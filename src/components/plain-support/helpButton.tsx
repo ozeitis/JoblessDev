@@ -11,7 +11,6 @@ import { BookIcon } from './icons/bookIcon';
 import { ChatAltIcon } from './icons/chatAltIcon';
 import { ContactForm } from './contactForm';
 
-// Used to link to docs, discord etc. before revealing chat
 function LinkRow(props: {
   label: string;
   icon: React.ReactNode;
@@ -63,10 +62,9 @@ export function HelpButton() {
             <>
               <h4 className={styles.popoverTitle}>Need help?</h4>
               <p className={styles.popoverNudge}>
-                Psss... Discord is great if you want a quick reply from our community!
+                Psss... Slack is great if you want a quick reply from our community!
               </p>
               <LinkRow label="Join on Slack" href="https://join.slack.com/t/joblessdev/shared_invite/zt-2gwopb39y-9XzMearVJQEVa46lvsQVdg" icon={<SlackIcon />} />
-              {/* <LinkRow label="Documentation" href="https://plain.com/docs/" icon={<BookIcon />} /> */}
               <LinkRow
                 label="Get in touch"
                 href="#"

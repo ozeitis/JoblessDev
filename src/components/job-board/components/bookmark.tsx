@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useUser } from "@clerk/clerk-react";
 import { analytics } from "@/lib/segment";
+import {
+    trackEvent,
+  } from '@openpanel/nextjs';
 
 function Bookmark({ jobId }: { jobId: string }) {
     const { isSignedIn } = useUser();
@@ -58,6 +61,7 @@ function Bookmark({ jobId }: { jobId: string }) {
             if (response.ok) {
                 setIsBookmarked(true);
                 analytics.track('Job Bookmarked', { jobId });
+                trackEvent('Job Bookmarked', { jobId });
                 toast.success('Bookmarked');
             } else {
                 toast.error('Failed to bookmark');

@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useUser } from "@clerk/clerk-react";
 import { toast } from 'sonner';
 import { analytics } from "@/lib/segment";
+import {
+  trackEvent,
+} from '@openpanel/nextjs';
 
 export function ContactForm(props: { onSubmit: () => void }) {
   const [name, setName] = useState('');
@@ -45,6 +48,7 @@ export function ContactForm(props: { onSubmit: () => void }) {
       if (result.ok) {
         props.onSubmit();
         analytics.track('Contact Form Submitted', { name, email, message, requestType });
+        trackEvent('contact_form_submitted', { name, email, message, requestType });
         toast.success("Nice, we'll be in touch shortly!");
       } else {
         toast.error('Oops, something went wrong.');

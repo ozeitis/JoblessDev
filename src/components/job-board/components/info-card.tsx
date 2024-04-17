@@ -19,14 +19,17 @@ export const JobSearchInfoCard = () => {
     }, []);
 
     return (
-        <Card className="my-6 p-4 bg-white shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out">
-            <CardContent className="text-left">
-                <CardTitle>How Job Applications are Parsed</CardTitle>
-                <CardDescription>
-                    <p>JoblessDev provides the most comprehensive and current job listings, including salary details, from major and minor job sites like LinkedIn, Indeed, Glassdoor, and others in real-time. With over 30 data points per job, it offers extensive search, querying, and filtering capabilities, ensuring fast and reliable job searches. Please note that while we strive to capture all available job postings, some may occasionally be missed.</p>
-                    <p className="mt-5">Updates every <strong>{refreshInterval / 3600}</strong> hours. Last updated: <strong>{lastUpdated}</strong>.</p>
-                </CardDescription>
-            </CardContent>
-        </Card>
+        <>
+            <section className="bg-gray-100 p-6 rounded-lg shadow mb-6">
+                <h2 className="text-xl font-semibold mb-1">How Job Applications are Parsed</h2>
+                <p className="text-gray-700 text-sm mb-3">
+                    JoblessDev provides the most comprehensive and current job listings, including salary details, from major and
+                    minor job sites like LinkedIn, Indeed, Glassdoor, and others in real-time. With over 30 data points per job,
+                    it offers extensive search, querying, and filtering capabilities, ensuring fast and reliable job searches.
+                    Please note that while we strive to capture all available job postings, some may occasionally be missed.
+                </p>
+                <p className="text-xs text-gray-500">Updates every <strong>{refreshInterval / 3600} hours</strong>. Last updated: <strong>{lastUpdated}</strong>.</p>
+            </section>
+        </>
     );
 };

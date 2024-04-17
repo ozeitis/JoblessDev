@@ -16,11 +16,14 @@ import axios from 'axios';
 import TruncatedText from './components/truncated-text';
 import Bookmark from './components/bookmark';
 import { JobSearchInfoCard } from './components/info-card';
-import { BriefcaseIcon } from '../icons';
+import { BriefcaseIcon, RefreshCwIcon } from '../icons';
 import CompanySearchSelect from './components/company-list';
 import { useSearchParams } from 'next/navigation';
+import { Button } from '../ui/button';
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { Badge } from '../ui/badge';
 
-// This function abstracts the API call logic.
+
 const fetchData = async ({ apiEndpoint, queryKey, pageParam = 0 }: { apiEndpoint: string, queryKey: any[], pageParam?: number }) => {
   const [searchTerm, location, companies] = queryKey[1];
   const params = new URLSearchParams({
@@ -83,6 +86,7 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     hasNextPage,
     isFetchingNextPage,
     isFetching,
+    refetch, // Destructure the refetch function from the useInfiniteQuery hook
   } = useInfiniteQuery({
     queryKey: ['jobs', [searchTerm, location, selectedCompanies]],
     queryFn: (context) => fetchData({ apiEndpoint, queryKey: context.queryKey, pageParam: context.pageParam }),
@@ -93,6 +97,10 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     },
     initialPageParam: 0,
   });
+  
+  const handleRefresh = () => {
+    refetch();
+  };
 
   useEffect(() => {
     if (data?.pages?.[0]?.totalCount) {
@@ -159,25 +167,17 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen">
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32">
+        <section className="w-full py-6 lg:py-16">
           <div className="container px-4 md:px-6">
-            <div className="grid gap-6 md:gap-8">
-              <div className="text-right">
-                <h1 className="text-sm font-semibold">Total Jobs Matching Your Criteria: {totalJobs === -1 ? "..." : totalJobs}</h1>
-              </div>
+            <div className="grid gap-6">
               <div className="grid gap-1">
                 <h1 className="text-2xl font-bold tracking-tight">{pageTitle}</h1>
                 <p className="text-gray-500 dark:text-gray-400">{pageDescription}</p>
               </div>
-              <div className="flex flex-col gap-4 mt-4 w-full">
-                <div className="w-full mb-4">
-                  <p className="text-sm font-semibold">
-                    <strong>Experimental:</strong> Searches job titles, descriptions, and company names. Let us know what you think!
-                  </p>
-                </div>
-                <div className="flex flex-col gap-4 md:flex-row w-full md:items-center md:gap-4">
+              <div className="bg-gray-50 p-4 rounded-md shadow-sm">
+                <div className="flex flex-col gap-4 md:flex-row w-full md:items-center md:gap-4 mb-4">
                   <div className="w-full md:w-1/2">
                     <Input className="" placeholder="Search jobs..." type="search" value={searchTerm} onChange={handleSearchChange} />
                   </div>
@@ -193,10 +193,12 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                         <SelectItem value="all">All States</SelectItem>
                         <SelectItem value="NY">New York</SelectItem>
                         <SelectItem value="NJ">New Jersey</SelectItem>
-                        {/* ... other options ... */}
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="text-sm text-gray-500 italic">
+                  <strong>Experimental:</strong> Searches job titles, descriptions, and company names. Let us know what you think!
                 </div>
               </div>
               <div className="flex justify-center">
@@ -208,6 +210,13 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                     renderSkeleton()
                   ) : (
                     <>
+                      <div className="flex justify-between items-center">
+                        <h1 className="text-sm">Total Jobs Matching Your Criteria: {totalJobs === -1 ? "..." : totalJobs}</h1>
+                        <Button className="flex items-center" variant="outline" onClick={handleRefresh}>
+                          <RefreshCwIcon className="mr-2" />
+                          Refresh{"\n          "}
+                        </Button>
+                      </div>
                       {data?.pages.map((group, i) => (
                         <React.Fragment key={i}>
                           {group.jobs.map((job: Job, index: number) => (
@@ -221,7 +230,12 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                                     <BriefcaseIcon className="h-6 w-6" />
                                   )}
                                 <div className="grid gap-1">
-                                  <CardTitle>{job.job_title}</CardTitle>
+                                  <CardTitle className="flex items-center gap-2">
+                                    {job.job_title}
+                                    <Badge variant="secondary">
+                                      {job.job_is_remote ? 'Remote' : 'Onsite'}
+                                    </Badge>
+                                  </CardTitle>
                                   <CardDescription>
                                     <HoverCard>
                                       <HoverCardTrigger asChild>
@@ -248,26 +262,19 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                                     , {job.job_city}, {job.job_state}{"\n                                          "}
                                   </CardDescription>
                                 </div>
-                                <div className="ml-auto flex flex-col items-end">
+                                <div className="ml-auto flex flex-row items-center justify-end space-x-2">
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     Last Updated on: {job.updatedAt ? new Date(job.updatedAt).toLocaleDateString() : 'N/A'}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Apply by: {job.job_offer_expiration_datetime_utc ? new Date(job.job_offer_expiration_datetime_utc).toLocaleDateString() : 'N/A'}
                                   </div>
                                   <Bookmark jobId={job.job_id} />
                                 </div>
                               </CardHeader>
                               <CardContent className="grid gap-2">
+                                <div className="grid gap-2 pl-4">
                                 <TruncatedText text={job.job_description ?? ''} maxLength={100} />
-                                <div className="grid gap-2">
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     <strong>Estimated Salary: </strong>
                                     {renderSalary(job)}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    <strong>Remote: </strong>
-                                    {job.job_is_remote ? 'Yes' : 'No'}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     <strong>Experience: </strong>

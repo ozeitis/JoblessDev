@@ -55,7 +55,7 @@ model Job {
   job_occupational_categories          Json?
   job_naics_code                       String?
   job_naics_name                       String?
-  ApplyOptions                         ApplyOption[]
+  ApplyOptions ApplyOption[] 
   bookmarks                            Bookmark[]
   company                              Company?      @relation(fields: [companyId], references: [id])
   companyId                            String?

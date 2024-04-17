@@ -10,6 +10,8 @@ import { LogSnagProvider } from '@logsnag/next';
 import Navbar from "@/components/navbar";
 import SegmantAnalytics from "@/components/segment-analytics";
 import { HelpButton } from "@/components/plain-support/helpButton";
+import { CSPostHogProvider } from "@/lib/posthog";
+import { OpenpanelProvider } from '@openpanel/nextjs';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,7 +35,16 @@ export default function RootLayout({
         <body className={inter.className}>
           <ReactQueryProvider>
             <Navbar />
-            {children}
+            <OpenpanelProvider
+              url="https://api.openpanel.dev"
+              clientId={process.env.OPENPANEL_CLIENT_ID || ""}
+              trackScreenViews={true}
+              trackAttributes={true}
+              trackOutgoingLinks={true}
+            />
+            <CSPostHogProvider>
+              {children}
+            </CSPostHogProvider>
             <HelpButton />
             <Analytics />
             <SegmantAnalytics />

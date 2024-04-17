@@ -5,6 +5,9 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/segment";
+import {
+  trackEvent,
+} from '@openpanel/nextjs';
 
 export function CreatorBadge() {
   // Initially set the button to be hidden
@@ -20,6 +23,7 @@ export function CreatorBadge() {
 
   const handleClose = () => {
     analytics.track('Creator Badge Closed');
+    trackEvent('Creator Badge Closed');
     const hours = 3;
     const now = new Date().getTime();
     const hideUntil = now + hours * 60 * 60 * 1000;
@@ -29,6 +33,8 @@ export function CreatorBadge() {
 
   const handleButtonClick = (e: { stopPropagation: () => void; }) => {
     analytics.track('Creator Badge Clicked');
+    trackEvent('Creator Badge Clicked');
+    
     e.stopPropagation();
     window.open("https://obotach.com", "_blank"); // Change the URL as needed
   };

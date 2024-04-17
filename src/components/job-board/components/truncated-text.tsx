@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { analytics } from "@/lib/segment";
+import {
+  trackEvent,
+} from '@openpanel/nextjs';
 
 function TruncatedText({ text, maxLength }: { text: string, maxLength: number }) {
     const [isTruncated, setIsTruncated] = useState(true);
@@ -12,6 +15,11 @@ function TruncatedText({ text, maxLength }: { text: string, maxLength: number })
             textLength: text.length,
             maxLength: maxLength
         });
+        trackEvent("Text Toggle", {
+            action: isTruncated ? "expand" : "collapse",
+            textLength: text.length,
+            maxLength: maxLength
+        });        
     };
 
     const ToggleButton = ({ onClick, isExpanded }: { onClick: () => void, isExpanded: boolean }) => (

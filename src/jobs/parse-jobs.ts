@@ -12,6 +12,8 @@ const logsnag = new LogSnag({
     project: process.env.LOGSNAG_PROJECT_NAME || '',
 });
 
+const ignoredDomains = (process.env.IGNORED_JOB_DOMAINS || '').split(',');
+
 async function getAllUsers() {
     try {
         const response = await fetch('https://api.clerk.com/v1/users?limit=500&offset=0&order_by=-created_at', {
@@ -50,14 +52,24 @@ client.defineJob({
             totalCreated: 0,
             totalDuplicates: 0,
             totalFailed: 0,
+            totalIgnored: 0,
             totalCompaniesCreated: 0,
             detailsByLocation: {}
         };
 
+        if (ignoredDomains.length === 0) {
+            await io.logger.warn('No ignored job domains found');
+        } else {
+            await io.logger.info(`Ignoring jobs from domains: ${ignoredDomains.join(', ')}`);
+        }
+
         for (const location of jobLocations) {
             const locationQuery = job_query.replace("PLACEHOLDER", location);
             const encodedQuery = encodeURIComponent(locationQuery);
-            const apiUrl = `https://jsearch.p.rapidapi.com/search?query=${encodedQuery}&page=1&num_pages=${num_pages}&date_posted=${date_posted}&employment_types=${employment_types}&job_requirements=${job_requirements}`;
+
+            const maxPages = parseInt(process.env.MAX_PAGES || '1');
+
+            const apiUrl = `https://jsearch.p.rapidapi.com/search?query=${encodedQuery}&num_pages=${num_pages}&date_posted=${date_posted}&employment_types=${employment_types}&job_requirements=${job_requirements}`;
             const options = {
                 method: 'GET',
                 headers: {
@@ -66,19 +78,33 @@ client.defineJob({
                 }
             };
 
-            await io.logger.info(`Fetching jobs for location: ${location} with query: ${locationQuery}`);
+            await io.logger.info(`Fetching jobs for location: ${location}`);
 
             try {
                 const response = await fetch(apiUrl, options);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data from API');
                 }
-                const data = await response.json() as { data: any };
+                const data = await response.json() as { data: any }
 
                 let created = 0, duplicates = 0, failed = 0, companiesCreated = 0;
 
                 for (const job of data.data) {
+                    let ignoreJob = ignoredDomains.some(domain => {
+                        const domainPattern = new URL(domain).hostname.replace('www.', '');
+                        const regex = new RegExp(`^${domainPattern}$`, 'i');
+                        return job.job_apply_link && regex.test(new URL(job.job_apply_link).hostname);
+                    });
+
+                    if (ignoreJob) {
+                        const cacheKey = `jobKey-${new Date().toISOString()}`;
+                        io.logger.info(`Ignoring job with apply link: ${job.job_apply_link} for location: ${location} with cache key: ${cacheKey}`);
+                        totalStats.totalIgnored++;
+                        continue;
+                    }
+
                     const { employer_name, employer_logo, employer_website, employer_company_type } = job;
+
                     let company;
 
                     if (employer_name) {
@@ -168,11 +194,11 @@ client.defineJob({
                     [location]: { created, duplicates, failed, companiesCreated }
                 };
             } catch (error) {
-                await io.logger.error(`Failed to fetch jobs for location: ${location}`, error as any);
+                await io.logger.error(`Failed to fetch jobs for location: ${location} - ${error}`);
                 await logsnag.track({
                     channel: "parse-jobs",
                     event: "Parsed New Jobs",
-                    description: `Failed to fetch jobs for location: ${location} with query: ${locationQuery} - ${error}`,
+                    description: `Failed to fetch jobs for location: ${location} - ${error}`,
                     icon: "❌",
                     notify: true,
                 });
@@ -200,14 +226,15 @@ client.defineJob({
 
         await logsnag.track({
             channel: "parse-jobs",
-            event: "Parsed New Jobs",
-            description: "Job fetching and storage process for all locations completed" + JSON.stringify(totalStats),
-            icon: "✅",
+            event: "Job Parsing Summary",
+            description: `Job fetching and storage process summary` + JSON.stringify(totalStats),
+            icon: "🔍",
             notify: true,
             tags: {
                 "total-created": totalStats.totalCreated,
                 "total-duplicates": totalStats.totalDuplicates,
-                "total-failed": totalStats.totalFailed
+                "total-failed": totalStats.totalFailed,
+                "total-ignored": totalStats.totalIgnored
             }
         });
 
