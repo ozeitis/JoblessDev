@@ -22,21 +22,29 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { RequestLocationFormDialog } from '../plain-support/dialog-form';
+import { getJobs } from '@/app/services/actions/jobs';
+import { getBookmarks } from '@/app/services/actions/bookmarks';
 
-const fetchData = async ({ apiEndpoint, queryKey, pageParam = 0 }: { apiEndpoint: string, queryKey: any[], pageParam?: number }) => {
+const fetchData = async ({ type, queryKey, pageParam = 0 }: { type: string, queryKey: any[], pageParam?: number }) => {
   const [searchTerm, location, companies] = queryKey[1];
-  const params = new URLSearchParams({
-    search: searchTerm,
-    location: location,
-    companies: companies,
-    page: String(Number(pageParam) + 1),
-    pageSize: '10'
-  }).toString();
-  const response = await axios.get(`${apiEndpoint}?${params}`);
-  return response.data;
+
+  let data = null;
+  if (type === 'all') {
+    data = getJobs({
+      search: searchTerm,
+      companies: companies,
+      jobState: location,
+      page: Number(pageParam) + 1,
+      pageSize: 10
+    });
+  } else if (type === 'bookmarks') {
+    data = getBookmarks();
+    console.log(data);
+  }
+  return data;
 };
 
-export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpoint: string, pageTitle: string, pageDescription: string }) {
+export function JobBoard({ type, pageTitle, pageDescription }: { type: string, pageTitle: string, pageDescription: string }) {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
@@ -90,7 +98,7 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     refetch,
   } = useInfiniteQuery({
     queryKey: ['jobs', [searchTerm, location, selectedCompanies]],
-    queryFn: (context) => fetchData({ apiEndpoint, queryKey: context.queryKey, pageParam: context.pageParam }),
+    queryFn: (context) => fetchData({ type, queryKey: context.queryKey, pageParam: context.pageParam }),
     getNextPageParam: (lastPage, allPages) => {
       const morePagesExist = lastPage?.jobs?.length === 10;
       if (!morePagesExist) return undefined;
