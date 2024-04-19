@@ -12,18 +12,19 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Skeleton } from "@/components/ui/skeleton"
 import { debounce } from "lodash";
-import axios from 'axios';
 import TruncatedText from './components/truncated-text';
 import Bookmark from './components/bookmark';
 import { JobSearchInfoCard } from './components/info-card';
-import { BriefcaseIcon, RefreshCwIcon } from '../icons';
+import { BriefcaseIcon, FlagIcon, RefreshCwIcon } from '../icons';
 import CompanySearchSelect from './components/company-list';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { RequestLocationFormDialog } from '../plain-support/dialog-form';
-import { getJobs } from '@/app/services/actions/jobs';
-import { getBookmarks } from '@/app/services/actions/bookmarks';
+import { getJobs } from '@/services/actions/jobs';
+import { getBookmarks } from '@/services/actions/bookmarks';
+import { startOfDay } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 const fetchData = async ({ type, queryKey, pageParam = 0 }: { type: string, queryKey: any[], pageParam?: number }) => {
   const [searchTerm, location, companies] = queryKey[1];
@@ -39,7 +40,6 @@ const fetchData = async ({ type, queryKey, pageParam = 0 }: { type: string, quer
     });
   } else if (type === 'bookmarks') {
     data = getBookmarks();
-    console.log(data);
   }
   return data;
 };
@@ -52,6 +52,8 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [isRequestLocationDialogOpen, setIsRequestLocationDialogOpen] = useState(false);
   const [formRequestType, setFormRequestType] = useState('');
+  const [formRequestComment, setFormRequestComment] = useState('');
+  const [newestJobDate, setNewestJobDate] = useState(0);
   const loadMoreRef = React.useRef(null);
 
   useEffect(() => {
@@ -115,7 +117,25 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
     if (data?.pages?.[0]?.totalCount) {
       setTotalJobs(data.pages[0].totalCount);
     }
+
+    let newestJob = data?.pages?.[0]?.jobs?.[0] ?? null;
+    if (newestJob && newestJob.createdAt) {
+      const jobDate = startOfDay(new Date(newestJob.createdAt));
+      setNewestJobDate(jobDate.getTime());
+    }
   }, [data]);
+  const isNewJob = (jobDate: string | Date) => {
+    const jobDayStart = startOfDay(new Date(jobDate)).getTime();
+    const todayStart = startOfDay(new Date()).getTime();
+
+    if (isNaN(newestJobDate)) {
+      console.error('Invalid date provided for newest job date:', newestJobDate);
+      return false;
+    }
+
+    return jobDayStart === todayStart || jobDayStart === newestJobDate;
+  };
+
 
   const handleSearchChange = (e: { target: { value: string; }; }) => {
     setSearchTerm(e.target.value);
@@ -131,6 +151,12 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
       setLocation(String(value));
       updateSearchParams({ location: String(value) });
     }
+  };
+
+  const reportJob = ({ jobId, type }: { jobId: string, type: string }) => {
+      setFormRequestType(String(type));
+      setFormRequestComment('Reporting job with ID: ["'+jobId+ '"] for...');
+      setIsRequestLocationDialogOpen(true);
   };
 
   const renderSkeleton = () => (
@@ -215,6 +241,7 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
                       isOpen={isRequestLocationDialogOpen}
                       onClose={() => setIsRequestLocationDialogOpen(false)}
                       requestType={formRequestType}
+                      comments={formRequestComment}
                     />
                   </div>
                 </div>
@@ -240,7 +267,7 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
                       </div>
                       {data?.pages.map((group, i) => (
                         <React.Fragment key={i}>
-                          {group.jobs.map((job: Job, index: number) => (
+                          {group?.jobs?.map((job: Job, index: number) => (
                             <Card key={index}>
                               <CardHeader className="flex flex-row items-center gap-4">
                                 {job.employer_logo && (
@@ -283,11 +310,18 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
                                     , {job.job_city}, {job.job_state}{"\n                                          "}
                                   </CardDescription>
                                 </div>
-                                <div className="ml-auto flex flex-row items-center justify-end space-x-2">
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Last Updated on: {job.updatedAt ? new Date(job.updatedAt).toLocaleDateString() : 'N/A'}
+                                <div className="ml-auto flex flex-col items-end space-y-1">
+                                  {isNewJob(job.createdAt) && (
+                                    <Badge className="=text-white py-1 px-2 text-xs font-bold rounded-full">
+                                      NEW TODAY
+                                    </Badge>
+                                  )}
+                                  <div className="flex items-center space-x-2">
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      Last Updated on: {job.updatedAt ? new Date(job.updatedAt).toLocaleDateString() : 'N/A'}
+                                    </div>
+                                    <Bookmark jobId={job.job_id} />
                                   </div>
-                                  <Bookmark jobId={job.job_id} />
                                 </div>
                               </CardHeader>
                               <CardContent className="grid gap-2">
@@ -320,13 +354,33 @@ export function JobBoard({ type, pageTitle, pageDescription }: { type: string, p
                                     {"\n                                          "}
                                   </div>
                                 </div>
-                                <Link href={job.job_apply_link} passHref legacyBehavior>
-                                  <a target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300">
-                                    View Details
-                                  </a>
-                                </Link>
+                                <div className="flex items-center justify-between">
+                                  <Link href={job.job_apply_link} passHref legacyBehavior>
+                                    <a target="_blank" rel="noopener noreferrer">
+                                      <Button variant="default">Apply Now</Button>
+                                    </a>
+                                  </Link>
+                                  <div className="flex items-center space-x-2">
+                                    <Button aria-label="Report this job listing" className="group p-1 relative" variant="ghost">
+                                      <TooltipProvider delayDuration={100}>
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <Button variant="link" size="icon" onClick={() => {reportJob({jobId: job.job_id, type: 'report_job'})}}>
+                                              <FlagIcon className="w-5 h-5 text-gray-500 group-hover:text-red-500 transition-colors duration-300" />
+                                            </Button>
+                                          </TooltipTrigger>
+                                          <TooltipContent className="bg-red-500">
+                                            <div className="flex flex-col space-y-2">
+                                              <h3 className="text-lg font-semibold">Report Job</h3>
+                                              <p className="text-sm">Report if inaccurate any information or fake job posting url&apos;s.</p>
+                                            </div>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+
+                                    </Button>
+                                  </div>
+                                </div>
                               </CardContent>
                             </Card>
                           ))}

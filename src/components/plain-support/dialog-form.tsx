@@ -17,10 +17,10 @@ interface RequestLocationFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   requestType?: string;
+  comments?: string;
 }
 
-export function RequestLocationFormDialog({ isOpen, onClose, requestType }: RequestLocationFormDialogProps) {
-  console.log(requestType);
+export function RequestLocationFormDialog({ isOpen, onClose, requestType, comments }: RequestLocationFormDialogProps) {
   const handleSubmit = () => {
     onClose();
   };
@@ -34,7 +34,7 @@ export function RequestLocationFormDialog({ isOpen, onClose, requestType }: Requ
             Fill out this form to request a new location.
           </DialogDescription>
         </DialogHeader>
-        <ContactForm onSubmit={handleSubmit} requestType={requestType} />
+        <ContactForm onSubmit={handleSubmit} requestType={requestType} comments={comments} />
       </DialogContent>
     </Dialog>
   );

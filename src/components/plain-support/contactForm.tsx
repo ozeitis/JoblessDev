@@ -12,10 +12,10 @@ import {
   trackEvent,
 } from '@openpanel/nextjs';
 
-export function ContactForm(props: { onSubmit: () => void, requestType?: string }) {
+export function ContactForm(props: { onSubmit: () => void, requestType?: string, comments?: string }) {
   const [name, setName] = useState('');
   const [email, setEmailAddress] = useState('');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(props.comments || '');
   const [requestType, setRequestType] = useState(props.requestType || '');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -49,7 +49,7 @@ export function ContactForm(props: { onSubmit: () => void, requestType?: string 
         props.onSubmit();
         analytics.track('Contact Form Submitted', { name, email, message, requestType });
         trackEvent('contact_form_submitted', { name, email, message, requestType });
-        toast.success("Nice, we'll be in touch shortly!");
+        toast.success("Thank you, we'll be in touch shortly!");
       } else {
         toast.error('Oops, something went wrong.');
       }
@@ -85,6 +85,7 @@ export function ContactForm(props: { onSubmit: () => void, requestType?: string 
             <SelectItem value="bug">🐛 Bug Report</SelectItem>
             <SelectItem value="support">🙋 Support Request</SelectItem>
             <SelectItem value="general">📬 General Inquiry</SelectItem>
+            <SelectItem value="report_job">🚨 Report Job Listing</SelectItem>
             <SelectItem value="request_new_location">🌍 Request New Location</SelectItem>
           </SelectContent>
         </Select>

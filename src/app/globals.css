@@ -67,7 +67,5 @@
 .content-flex {
   display: flex;
   align-items: center;
-  /* Align items vertically in the center */
   gap: 10px;
-  /* Adds some space between the avatar and the text */
 }

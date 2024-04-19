@@ -16,7 +16,6 @@ async function getUserDetails(userId: string) {
     };
 }
 
-// Helper function to handle creating or updating a contact
 async function handleContact(email: string, userDetails: any, properties: any) {
     const contactProperties = {
         ...properties,
@@ -26,7 +25,7 @@ async function handleContact(email: string, userDetails: any, properties: any) {
         userGroup: 'Member'
     };
 
-    const contacts = await loops.findContact(email);
+    const contacts = await loops.findContact({ email });
     if (contacts.length === 0) {
         return loops.createContact(email, contactProperties);
     } else {
@@ -42,7 +41,7 @@ export async function GET(request: Request) {
 
     try {
         const { emailAddress, ...userDetails } = await getUserDetails(userId);
-        const contacts = await loops.findContact(emailAddress);
+        const contacts = await loops.findContact({ email: emailAddress });
         if (contacts.length === 0) {
             // Contact not found, so let's create a default contact
             await handleContact(emailAddress, userDetails, { clerkUserId: userId, emailFrequency: 'weekly' });

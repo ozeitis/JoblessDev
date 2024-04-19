@@ -58,6 +58,7 @@ export async function POST(request: Request) {
       bug: 'Bug Report',
       support: 'Support Request',
       general: 'General Inquiry',
+      report_job: 'Job Listing Report',
       request_new_location: 'New Location Request'
     };
 
