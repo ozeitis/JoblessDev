@@ -57,7 +57,8 @@ export async function POST(request: Request) {
       feature: 'Feature Request',
       bug: 'Bug Report',
       support: 'Support Request',
-      general: 'General Inquiry'
+      general: 'General Inquiry',
+      request_new_location: 'New Location Request'
     };
 
     const threadTitle = requestTitles[body.requestType]

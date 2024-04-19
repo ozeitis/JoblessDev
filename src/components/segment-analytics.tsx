@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { analytics } from "@/lib/segment";
 import { PostHog } from 'posthog-node'
 import { useAuth, useUser } from "@clerk/nextjs";
+import { H } from "@highlight-run/next/client";
 
 import {
     setProfile,
@@ -38,7 +39,7 @@ export default function SegmentAnalytics() {
                 },
                 event: 'Page Viewed',
             });
-                
+
 
             setProfile({
                 profileId: userId || '',
@@ -46,6 +47,14 @@ export default function SegmentAnalytics() {
                 lastName: user.lastName || '',
                 email: user.emailAddresses[0].emailAddress || '',
                 avatar: user.imageUrl || '',
+            });
+
+            H.identify(
+                user.emailAddresses[0].emailAddress, {
+                id: userId ?? '',
+                name: user.fullName ?? '',
+                email: user.emailAddresses[0].emailAddress ?? '',
+                avatar: user.imageUrl ?? '',
             });
         }
     }, [isLoaded, userId, user, pathname, searchParams]);

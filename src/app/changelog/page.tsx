@@ -1,4 +1,4 @@
-import { ChangeLog } from "@/components/changelog";
+import ChangeLog from "@/components/changelog";
 
 export default function Home() {
   return (

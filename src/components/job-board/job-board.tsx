@@ -21,7 +21,7 @@ import CompanySearchSelect from './components/company-list';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-
+import { RequestLocationFormDialog } from '../plain-support/dialog-form';
 
 const fetchData = async ({ apiEndpoint, queryKey, pageParam = 0 }: { apiEndpoint: string, queryKey: any[], pageParam?: number }) => {
   const [searchTerm, location, companies] = queryKey[1];
@@ -42,6 +42,8 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
   const [location, setLocation] = useState('');
   const [totalJobs, setTotalJobs] = useState(-1);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [isRequestLocationDialogOpen, setIsRequestLocationDialogOpen] = useState(false);
+  const [formRequestType, setFormRequestType] = useState('');
   const loadMoreRef = React.useRef(null);
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     hasNextPage,
     isFetchingNextPage,
     isFetching,
-    refetch, // Destructure the refetch function from the useInfiniteQuery hook
+    refetch,
   } = useInfiniteQuery({
     queryKey: ['jobs', [searchTerm, location, selectedCompanies]],
     queryFn: (context) => fetchData({ apiEndpoint, queryKey: context.queryKey, pageParam: context.pageParam }),
@@ -96,7 +98,7 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
     },
     initialPageParam: 0,
   });
-  
+
   const handleRefresh = () => {
     refetch();
   };
@@ -113,8 +115,14 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
   };
 
   const handleLocationChange = (value: React.SetStateAction<string> | ((prevState: string) => string)) => {
-    setLocation(String(value));
-    updateSearchParams({ location: String(value) });
+    if (value === 'request_new_location') {
+      setFormRequestType(String(value));
+      setLocation('');
+      setIsRequestLocationDialogOpen(true);
+    } else {
+      setLocation(String(value));
+      updateSearchParams({ location: String(value) });
+    }
   };
 
   const renderSkeleton = () => (
@@ -172,8 +180,8 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
           <div className="container px-4 md:px-6">
             <div className="grid gap-6">
               <div className="grid gap-1">
-                <h1 className="text-2xl font-bold tracking-tight">{pageTitle}</h1>
-                <p className="text-gray-500 dark:text-gray-400">{pageDescription}</p>
+                <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-b from-teal-500 via-purple-500 to-red-500 text-transparent bg-clip-text">{pageTitle}</h1>
+                <p className="text-lg font-medium bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700 text-transparent bg-clip-text dark:text-gray-400">{pageDescription}</p>
               </div>
               <div className="bg-gray-50 p-4 rounded-md shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row w-full md:items-center md:gap-4 mb-4">
@@ -192,8 +200,14 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                         <SelectItem value="all">All States</SelectItem>
                         <SelectItem value="NY">New York</SelectItem>
                         <SelectItem value="NJ">New Jersey</SelectItem>
+                        <SelectItem value="request_new_location">Request New Location</SelectItem>
                       </SelectContent>
                     </Select>
+                    <RequestLocationFormDialog
+                      isOpen={isRequestLocationDialogOpen}
+                      onClose={() => setIsRequestLocationDialogOpen(false)}
+                      requestType={formRequestType}
+                    />
                   </div>
                 </div>
                 <div className="text-sm text-gray-500 italic">
@@ -270,7 +284,7 @@ export function JobBoard({ apiEndpoint, pageTitle, pageDescription }: { apiEndpo
                               </CardHeader>
                               <CardContent className="grid gap-2">
                                 <div className="grid gap-2 pl-4">
-                                <TruncatedText text={job.job_description ?? ''} maxLength={100} />
+                                  <TruncatedText text={job.job_description ?? ''} maxLength={100} />
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     <strong>Estimated Salary: </strong>
                                     {renderSalary(job)}

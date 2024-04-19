@@ -18,6 +18,9 @@ const config = {
       },
     },
     extend: {
+      backgroundImage: {
+        'radial-gradient': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -74,7 +77,11 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("tailwindcss-gradients"),
+    require('@tailwindcss/typography'),
+  ],  
 } satisfies Config
 
 export default config

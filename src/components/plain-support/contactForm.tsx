@@ -12,11 +12,11 @@ import {
   trackEvent,
 } from '@openpanel/nextjs';
 
-export function ContactForm(props: { onSubmit: () => void }) {
+export function ContactForm(props: { onSubmit: () => void, requestType?: string }) {
   const [name, setName] = useState('');
   const [email, setEmailAddress] = useState('');
   const [message, setMessage] = useState('');
-  const [requestType, setRequestType] = useState('');
+  const [requestType, setRequestType] = useState(props.requestType || '');
   const [isLoading, setIsLoading] = useState(false);
   
   const { isSignedIn, user } = useUser();
@@ -85,6 +85,7 @@ export function ContactForm(props: { onSubmit: () => void }) {
             <SelectItem value="bug">🐛 Bug Report</SelectItem>
             <SelectItem value="support">🙋 Support Request</SelectItem>
             <SelectItem value="general">📬 General Inquiry</SelectItem>
+            <SelectItem value="request_new_location">🌍 Request New Location</SelectItem>
           </SelectContent>
         </Select>
       </FormField>

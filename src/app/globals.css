@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* @layer base {
+  body {
+    @apply bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50
+  }
+} */
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
