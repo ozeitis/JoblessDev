@@ -3,36 +3,6 @@ import { auth } from '@clerk/nextjs';
 
 const prisma = new PrismaClient();
 
-export async function GET(request: Request) {
-    const { userId } = auth(); // Make sure this aligns with how you're actually retrieving the user ID
-
-    try {
-        const bookmarks = await prisma.bookmark.findMany({
-            where: {
-                userId: userId!,
-            },
-            include: {
-                job: true, // Include related job information
-            },
-        });
-
-        return new Response(JSON.stringify(bookmarks), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-    } catch (error) {
-        console.error('Failed to fetch bookmarks:', error);
-        return new Response(JSON.stringify({ message: 'Failed to fetch bookmarks' }), {
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-    }
-}
-
 export async function POST(request: Request) {
     const { userId } = auth();
     const { jobId } = await request.json(); 
