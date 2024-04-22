@@ -6,7 +6,7 @@ import { analytics } from "@/lib/segment";
 import { PostHog } from "posthog-node";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { H } from "@highlight-run/next/client";
-import Tracker from "@openreplay/tracker";
+
 import { setProfile } from "@openpanel/nextjs";
 
 export default function SegmentAnalytics() {
@@ -16,9 +16,6 @@ export default function SegmentAnalytics() {
   const { user } = useUser();
   const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY || "", {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  });
-  const tracker = new Tracker({
-    projectKey: process.env.OPENREPLAY_PROJECT_KEY || "",
   });
 
   useEffect(() => {
@@ -55,8 +52,6 @@ export default function SegmentAnalytics() {
         email: user.emailAddresses[0].emailAddress ?? "",
         avatar: user.imageUrl ?? "",
       });
-
-      tracker.setUserID(user.emailAddresses[0].emailAddress);
     }
   }, [isLoaded, userId, user, pathname, searchParams]);
 
