@@ -66,7 +66,7 @@ export default function RootLayout({
               <HighlightInit
                 projectId={process.env.NEXT_PUBLIC_HIGHLIGHT_PROJECT_ID || ""}
                 serviceName="my-nextjs-frontend"
-                tracingOrigins={[/^(?!.*\.clerk\..*).*/]}
+                tracingOrigins={["/^(?!.*\\.clerk\\..*).*/"]}
                 networkRecording={{
                   enabled: true,
                   recordHeadersAndBody: true,
