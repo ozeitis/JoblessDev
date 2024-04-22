@@ -14,7 +14,6 @@ export const JobSearchInfoCard = () => {
             try {
                 setLoading(true);
                 const data = await getNewestJobDate();
-                console.log('Data:', data);
 
                 if (data && data.lastBackgroundJobRun && typeof data.lastBackgroundJobRun === 'string') {
                     const lastUpdateTime = moment(data.lastBackgroundJobRun).tz(timezone);
