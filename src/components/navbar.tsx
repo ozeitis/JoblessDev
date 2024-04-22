@@ -30,10 +30,6 @@ function Navbar() {
     window.open("https://demo.arcade.software/XAWkjRzjVGqdlSRIeq33", "_blank");
   };
 
-  useEffect(() => {
-    tracker.start();
-  }, []);
-
   return (
     <header className="container px-4 md:px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-6">

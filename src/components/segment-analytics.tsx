@@ -56,11 +56,7 @@ export default function SegmentAnalytics() {
         avatar: user.imageUrl ?? "",
       });
 
-      tracker.setUserID(userId || "", {
-        name: user.fullName || "",
-        email: user.emailAddresses[0].emailAddress || "",
-        avatar: user.imageUrl || "",
-      });
+      tracker.setUserID(user.emailAddresses[0].emailAddress);
     }
   }, [isLoaded, userId, user, pathname, searchParams]);
 
