@@ -1,19 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import GitHubButton from "react-github-btn";
 import { Button } from "@/components/ui/button";
+import Tracker from "@openreplay/tracker";
+import trackerAssist from "@openreplay/tracker-assist";
 
 function Navbar() {
   const handleReload = (href: string) => {
     window.location.href = href;
   };
 
+  const tracker = new Tracker({
+    projectKey: process.env.OPENREPLAY_PROJECT_KEY || "",
+  });
+  tracker.use(
+    trackerAssist({
+      onAgentConnect: () => {
+        console.log("Live session started");
+        const onAgentDisconnect = () => console.log("Live session stopped");
+        return onAgentDisconnect;
+      },
+    }),
+  );
+
   const openIframe = () => {
     window.open("https://demo.arcade.software/XAWkjRzjVGqdlSRIeq33", "_blank");
   };
+
+  useEffect(() => {
+    tracker.start();
+  }, []);
 
   return (
     <header className="container px-4 md:px-6 py-4 flex items-center justify-between">
