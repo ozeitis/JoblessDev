@@ -20,12 +20,18 @@ async function fetchUser() {
 }
 
 function Navbar() {
+  let openReplayProjectKey = process.env.NEXT_PUBLIC_OPENREPLAY_PROJECT_KEY;
+  if (!openReplayProjectKey) {
+    console.warn("OpenReplay project key is not set.");
+    openReplayProjectKey = "";
+  }
+
   const handleReload = (href: string) => {
     window.location.href = href;
   };
 
   const tracker = new Tracker({
-    projectKey: process.env.OPENREPLAY_PROJECT_KEY || "",
+    projectKey: openReplayProjectKey,
   });
   tracker.use(
     trackerAssist({
