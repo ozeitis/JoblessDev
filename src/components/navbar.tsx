@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button";
 import Tracker from "@openreplay/tracker";
 import trackerAssist from "@openreplay/tracker-assist";
 
+async function fetchUser() {
+  const response = await fetch("/api/auth/identify", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const data = await response.json();
+  return data;
+}
+
 function Navbar() {
   const handleReload = (href: string) => {
     window.location.href = href;
@@ -26,6 +37,17 @@ function Navbar() {
     }),
   );
 
+  useEffect(() => {
+    const loadUserAndStartTracking = async () => {
+      const user = await fetchUser();
+      tracker.start();
+      if (user) {
+        tracker.setUserID(user);
+      }
+    };
+
+    loadUserAndStartTracking();
+  }, []);
   const openIframe = () => {
     window.open("https://demo.arcade.software/XAWkjRzjVGqdlSRIeq33", "_blank");
   };
