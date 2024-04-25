@@ -27,7 +27,6 @@ import {
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { debounce } from "lodash";
 import TruncatedText from "./components/truncated-text";
 import Bookmark from "./components/bookmark";
 import { JobSearchInfoCard } from "./components/info-card";
@@ -46,6 +45,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import useDebounce from "./useDebounce";
 
 const fetchData = async ({
   type,
@@ -56,12 +56,12 @@ const fetchData = async ({
   queryKey: any[];
   pageParam?: number;
 }) => {
-  const [searchTerm, location, companies] = queryKey[1];
+  const [debouncedSearchTerm, location, companies] = queryKey[1];
 
   let data = null;
   if (type === "all") {
     data = getJobs({
-      search: searchTerm,
+      search: debouncedSearchTerm,
       companies: companies,
       jobState: location,
       page: Number(pageParam) + 1,
@@ -84,6 +84,7 @@ export function JobBoard({
 }) {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [location, setLocation] = useState("");
   const [totalJobs, setTotalJobs] = useState(-1);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
@@ -92,6 +93,7 @@ export function JobBoard({
   const [formRequestType, setFormRequestType] = useState("");
   const [formRequestComment, setFormRequestComment] = useState("");
   const [newestJobDate, setNewestJobDate] = useState(0);
+  const debouncedSearch = useDebounce(searchTerm, 500);
   const loadMoreRef = React.useRef(null);
 
   useEffect(() => {
@@ -101,6 +103,7 @@ export function JobBoard({
 
     if (searchParam) {
       setSearchTerm(searchParam);
+      setDebouncedSearchTerm(searchParam);
     }
     if (locationParam) {
       setLocation(locationParam);
@@ -114,17 +117,6 @@ export function JobBoard({
     const companyNames = selectedCompanies.map((company: any) => company.value);
     setSelectedCompanies(companyNames);
     updateSearchParams({ companies: companyNames.join(",") });
-  };
-
-  // Define the debounced function outside of your component or useEffect to avoid re-creating it on each render
-  const debouncedSearch = debounce((value) => {
-    setSearchTerm(value);
-    updateSearchParams({ search: value });
-  }, 300); // 300 ms delay
-
-  const handleSearchChange = (e: any) => {
-    e.persist(); // Persist the event since we're using debounce
-    debouncedSearch(e.target.value);
   };
 
   const updateSearchParams = (newParams: Record<string, string>) => {
@@ -148,7 +140,7 @@ export function JobBoard({
     isFetching,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["jobs", [searchTerm, location, selectedCompanies]],
+    queryKey: ["jobs", [debouncedSearchTerm, location, selectedCompanies]],
     queryFn: (context) =>
       fetchData({
         type,
@@ -192,6 +184,13 @@ export function JobBoard({
 
     return jobDayStart === todayStart || jobDayStart === newestJobDate;
   };
+
+  const handleSearchChange = (e: { target: { value: string } }) => {};
+
+  useEffect(() => {
+    updateSearchParams({ search: searchTerm });
+    setDebouncedSearchTerm(debouncedSearch);
+  }, [debouncedSearch]);
 
   const handleLocationChange = (
     value: React.SetStateAction<string> | ((prevState: string) => string),
@@ -292,7 +291,7 @@ export function JobBoard({
                       placeholder="Search jobs..."
                       type="search"
                       value={searchTerm}
-                      onChange={handleSearchChange}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                   <div className="w-full md:w-1/4">
