@@ -122,7 +122,7 @@ export function JobBoard({
     updateSearchParams({ search: value });
   }, 300); // 300 ms delay
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: any) => {
     e.persist(); // Persist the event since we're using debounce
     debouncedSearch(e.target.value);
   };
