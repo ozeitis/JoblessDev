@@ -14,6 +14,7 @@ import { CSPostHogProvider } from "@/lib/posthog";
 import { OpenpanelProvider } from "@openpanel/nextjs";
 import Script from "next/script";
 import { HighlightInit } from "@highlight-run/next/client";
+import PlausibleProvider from "next-plausible";
 
 const roboto = Roboto({
   weight: ["400", "700"],
@@ -37,6 +38,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head>
+          <PlausibleProvider
+            domain="joblessdev.com"
+            enabled={process.env.NODE_ENV === "production"}
+          />
           <LogSnagProvider
             token={process.env.LOGSNAG_API_KEY || ""}
             project={process.env.LOGSNAG_PROJECT_NAME || ""}

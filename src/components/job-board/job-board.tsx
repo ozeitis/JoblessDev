@@ -39,6 +39,7 @@ import { RequestLocationFormDialog } from "../plain-support/dialog-form";
 import { getJobs } from "@/services/actions/jobs";
 import { getBookmarks } from "@/services/actions/bookmarks";
 import { startOfDay } from "date-fns";
+import { usePlausible } from "next-plausible";
 import {
   Tooltip,
   TooltipContent,
@@ -95,6 +96,7 @@ export function JobBoard({
   const [newestJobDate, setNewestJobDate] = useState(0);
   const debouncedSearch = useDebounce(searchTerm, 500);
   const loadMoreRef = React.useRef(null);
+  const plausible = usePlausible();
 
   useEffect(() => {
     const searchParam = searchParams.get("search");
@@ -104,12 +106,17 @@ export function JobBoard({
     if (searchParam) {
       setSearchTerm(searchParam);
       setDebouncedSearchTerm(searchParam);
+      plausible("Search", { props: { search: searchParam } });
     }
     if (locationParam) {
       setLocation(locationParam);
+      plausible("Location", { props: { location: locationParam } });
     }
     if (companiesParam) {
       setSelectedCompanies(companiesParam.split(","));
+      for (const company of companiesParam.split(",")) {
+        plausible("Company", { props: { company } });
+      }
     }
   }, [searchParams]);
 

@@ -1,12 +1,26 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-        domains: ['basehub.earth'],
-    },
+  images: {
+    domains: ["basehub.earth"],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/plausible/js/script.js",
+        destination: "https://plausible.io/js/script.js",
+      },
+      {
+        source: "/plausible/api/event",
+        destination: "https://plausible.io/api/event",
+      },
+    ];
+  },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(
+  nextConfig,
+  {
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
@@ -14,7 +28,8 @@ export default withSentryConfig(nextConfig, {
     silent: true,
     org: "joblessdev",
     project: "javascript-nextjs",
-}, {
+  },
+  {
     // For all available options, see:
     // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
@@ -41,4 +56,5 @@ export default withSentryConfig(nextConfig, {
     // https://docs.sentry.io/product/crons/
     // https://vercel.com/docs/cron-jobs
     automaticVercelMonitors: true,
-});
+  },
+);

@@ -1,30 +1,40 @@
-import { useEffect, useState } from 'react';
-import { FormField } from '@/components/plain-support/formField';
-import { TextInput } from '@/components/plain-support/textInput';
-import styles from '@/components/plain-support/contactForm.module.css';
-import { Textarea } from '@/components/plain-support/textarea';
-import { Button } from '@/components/plain-support/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useUser } from "@clerk/clerk-react";
-import { toast } from 'sonner';
-import { analytics } from "@/lib/segment";
+import { useEffect, useState } from "react";
+import { FormField } from "@/components/plain-support/formField";
+import { TextInput } from "@/components/plain-support/textInput";
+import styles from "@/components/plain-support/contactForm.module.css";
+import { Textarea } from "@/components/plain-support/textarea";
+import { Button } from "@/components/plain-support/button";
 import {
-  trackEvent,
-} from '@openpanel/nextjs';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useUser } from "@clerk/clerk-react";
+import { toast } from "sonner";
+import { analytics } from "@/lib/segment";
+import { usePlausible } from "next-plausible";
+import { trackEvent } from "@openpanel/nextjs";
 
-export function ContactForm(props: { onSubmit: () => void, requestType?: string, comments?: string }) {
-  const [name, setName] = useState('');
-  const [email, setEmailAddress] = useState('');
-  const [message, setMessage] = useState(props.comments || '');
-  const [requestType, setRequestType] = useState(props.requestType || '');
+export function ContactForm(props: {
+  onSubmit: () => void;
+  requestType?: string;
+  comments?: string;
+}) {
+  const plausible = usePlausible();
+  const [name, setName] = useState("");
+  const [email, setEmailAddress] = useState("");
+  const [message, setMessage] = useState(props.comments || "");
+  const [requestType, setRequestType] = useState(props.requestType || "");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { isSignedIn, user } = useUser();
 
   useEffect(() => {
     if (isSignedIn) {
-      setName(user.fullName || '');
-      setEmailAddress(user.emailAddresses[0].emailAddress || '');
+      setName(user.fullName || "");
+      setEmailAddress(user.emailAddresses[0].emailAddress || "");
     }
   }, [isSignedIn, user]);
 
@@ -40,22 +50,35 @@ export function ContactForm(props: { onSubmit: () => void, requestType?: string,
     };
 
     try {
-      const result = await fetch('/api/contact', {
-        method: 'POST',
+      const result = await fetch("/api/contact", {
+        method: "POST",
         body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       });
       if (result.ok) {
         props.onSubmit();
-        analytics.track('Contact Form Submitted', { name, email, message, requestType });
-        trackEvent('contact_form_submitted', { name, email, message, requestType });
+        analytics.track("Contact Form Submitted", {
+          name,
+          email,
+          message,
+          requestType,
+        });
+        trackEvent("contact_form_submitted", {
+          name,
+          email,
+          message,
+          requestType,
+        });
+        plausible("Contact Form Submitted", {
+          props: { name, email, message, requestType },
+        });
         toast.success("Thank you, we'll be in touch shortly!");
       } else {
-        toast.error('Oops, something went wrong.');
+        toast.error("Oops, something went wrong.");
       }
     } catch (error) {
       console.error(error);
-      toast.error('Oops, something went wrong.');
+      toast.error("Oops, something went wrong.");
     }
 
     setIsLoading(false);
@@ -68,15 +91,26 @@ export function ContactForm(props: { onSubmit: () => void, requestType?: string,
   return (
     <form className={styles.form} onSubmit={onSubmit}>
       <FormField label="Your name">
-        <TextInput value={name} onChange={setName} placeholder="e.g. Mr. Robot" />
+        <TextInput
+          value={name}
+          onChange={setName}
+          placeholder="e.g. Mr. Robot"
+        />
       </FormField>
 
       <FormField label="Your email">
-        <TextInput value={email} onChange={setEmailAddress} placeholder="e.g. elliot@protonmail.com" />
+        <TextInput
+          value={email}
+          onChange={setEmailAddress}
+          placeholder="e.g. elliot@protonmail.com"
+        />
       </FormField>
 
       <FormField label="Type of request">
-      <Select onValueChange={(value) => handleRequestTypeChange(value)} value={requestType}>
+        <Select
+          onValueChange={(value) => handleRequestTypeChange(value)}
+          value={requestType}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select request type" />
           </SelectTrigger>
@@ -86,13 +120,19 @@ export function ContactForm(props: { onSubmit: () => void, requestType?: string,
             <SelectItem value="support">🙋 Support Request</SelectItem>
             <SelectItem value="general">📬 General Inquiry</SelectItem>
             <SelectItem value="report_job">🚨 Report Job Listing</SelectItem>
-            <SelectItem value="request_new_location">🌍 Request New Location</SelectItem>
+            <SelectItem value="request_new_location">
+              🌍 Request New Location
+            </SelectItem>
           </SelectContent>
         </Select>
       </FormField>
 
       <FormField label="Your message">
-        <Textarea value={message} onChange={setMessage} placeholder={`Hi there, do you...`} />
+        <Textarea
+          value={message}
+          onChange={setMessage}
+          placeholder={`Hi there, do you...`}
+        />
       </FormField>
 
       <Button label="Send" isLoading={isLoading} isDisabled={isLoading} />
