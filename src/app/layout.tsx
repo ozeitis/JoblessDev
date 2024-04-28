@@ -38,6 +38,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head>
+          <meta
+            name="google-adsense-account"
+            content="ca-pub-4395499869686300"
+          />
           <PlausibleProvider
             domain="joblessdev.com"
             enabled={process.env.NODE_ENV === "production"}
