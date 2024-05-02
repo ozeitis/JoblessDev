@@ -1,9 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
-/** @type {import('next-sitemap').IConfig} */
 const nextConfig = {
-  siteUrl: "https://joblessdev.com",
-  generateRobotsTxt: true,
   images: {
     domains: ["basehub.earth"],
   },
