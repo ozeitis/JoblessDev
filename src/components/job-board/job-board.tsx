@@ -316,9 +316,11 @@ export function JobBoard({
                         <SelectValue placeholder="Location" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All States</SelectItem>
+                        <SelectItem value="all">All Locations</SelectItem>
                         <SelectItem value="NY">New York</SelectItem>
                         <SelectItem value="NJ">New Jersey</SelectItem>
+                        <SelectItem value="CA">Los Angeles</SelectItem>
+                        <SelectItem value="IL">Chicago</SelectItem>
                         <SelectItem value="request_new_location">
                           Request New Location
                         </SelectItem>
