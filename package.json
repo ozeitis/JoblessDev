@@ -81,5 +81,8 @@
   },
   "trigger.dev": {
     "endpointId": "jobpostings-we3k"
+  },
+  "engines": {
+    "node": ">=24.22.1 <25"
   }
 }
